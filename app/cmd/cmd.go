@@ -13,7 +13,7 @@ var Env string
 
 // RegisterGlobalFlags 注册全局选项（flag）
 func RegisterGlobalFlags(rootCmd *cobra.Command) {
-	rootCmd.PersistentFlags().StringVarP(&Env, "env", "e", "", "load .env file, example: --env=testing will use .env.testing file")
+	rootCmd.PersistentFlags().StringVarP(&Env, "env", "e", "", "select config file, example: --env=local will use application-local.yaml cover application.yaml")
 }
 
 // RegisterDefaultCmd 注册默认命令

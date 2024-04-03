@@ -2,6 +2,7 @@
 package config
 
 import (
+	"fmt"
 	"gohub/pkg/helpers"
 	"os"
 
@@ -12,49 +13,37 @@ import (
 // viper 库实例
 var viper *viperlib.Viper
 
-// ConfigFunc 动态加载配置信息
-type ConfigFunc func() map[string]interface{}
-
-// ConfigFuncs 先加载到此数组，loadConfig 再动态生成配置信息
-var ConfigFuncs map[string]ConfigFunc
-
 func init() {
 
 	// 1. 初始化 Viper 库
 	viper = viperlib.New()
 	// 2. 配置类型，支持 "json", "toml", "yaml", "yml", "properties",
 	//             "props", "prop", "env", "dotenv"
-	viper.SetConfigType("env")
+	viper.SetConfigType("yaml")
 	// 3. 环境变量配置文件查找的路径，相对于 main.go
 	viper.AddConfigPath(".")
 	// 4. 设置环境变量前缀，用以区分 Go 的系统环境变量
 	viper.SetEnvPrefix("appenv")
-	// 5. 读取环境变量（支持 flags）
-	viper.AutomaticEnv()
-
-	ConfigFuncs = make(map[string]ConfigFunc)
-}
-
-// InitConfig 初始化配置信息，完成对环境变量以及 config 信息的加载
-func InitConfig(env string) {
-	// 1. 加载环境变量
-	loadEnv(env)
-	// 2. 注册配置信息
-	loadConfig()
-}
-
-func loadConfig() {
-	for name, fn := range ConfigFuncs {
-		viper.Set(name, fn())
+	// 5. 设置默认值
+	viper.SetConfigName("application.yaml")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
+	configs := viper.AllSettings()
+	for k, v := range configs {
+		viper.SetDefault(k, v)
 	}
 }
 
+// InitConfig 完成环境变量
+func InitConfig(env string) {
+	loadEnv(env)
+}
 func loadEnv(envSuffix string) {
-
-	// 默认加载 .env 文件，如果有传参 --env=name 的话，加载 .env.name 文件
-	envPath := ".env"
+	envPath := formatEnvStr(Get("app.env"))
 	if len(envSuffix) > 0 {
-		filepath := ".env." + envSuffix
+		filepath := formatEnvStr(envSuffix)
 		if _, err := os.Stat(filepath); err == nil {
 			// 如 .env.testing 或 .env.stage
 			envPath = filepath
@@ -71,17 +60,8 @@ func loadEnv(envSuffix string) {
 	viper.WatchConfig()
 }
 
-// Env 读取环境变量，支持默认值
-func Env(envName string, defaultValue ...interface{}) interface{} {
-	if len(defaultValue) > 0 {
-		return internalGet(envName, defaultValue[0])
-	}
-	return internalGet(envName)
-}
-
-// Add 新增配置项
-func Add(name string, configFn ConfigFunc) {
-	ConfigFuncs[name] = configFn
+func formatEnvStr(env string) string {
+	return fmt.Sprintf("application-%s.yaml", env)
 }
 
 // Get 获取配置项

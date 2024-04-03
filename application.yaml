@@ -1,0 +1,157 @@
+# 应用配置
+app:
+  # 应用名称
+  name: Gohub
+  # 当前环境，用以区分多环境，一般为 local, production, testing, 与配置文件后缀相匹配，命令行的环境配置会覆盖这个
+  env: local
+  # 是否进入调试模式；如 jwt 过期时间分为 debug_expire_time 和 expire_time
+  debug: true
+  # 应用服务端口
+  port: "3000"
+  # JWT 加密密钥
+  key: 33446a9dcf9ea060a0a6532b166da32f304af0de
+  # 用以生成链接
+  url: http://localhost:3000
+  # 设置时区，JWT 里会使用，日志记录里也会使用到
+  timezone: Asia/Shanghai
+
+# Captcha 验证码配置
+captcha:
+  # 验证码图片高度
+  height: 80
+  # 验证码图片宽度
+  width: 240
+  # 验证码的长度
+  length: 6
+  # 数字的最大倾斜角度
+  maxskew: 0.7
+  # 图片背景里的混淆点数量
+  dotcount: 80
+  # 过期时间，单位是分钟
+  expire_time: 15
+  # debug 模式下的过期时间，方便本地开发调试
+  debug_expire_time: 10080
+  # 非 production 环境，使用此 key 可跳过验证，方便测试
+  testing_key: captcha_skip_test
+
+# 数据库配置
+database:
+  # 默认数据库
+  connection: mysql
+  mysql:
+    # 数据库连接信息
+    host: 127.0.0.1
+    port: 3306
+    database: gohub
+    username:
+    password:
+    charset: utf8mb4
+    # 连接池配置
+    max_idle_connections: 100
+    max_open_connections: 25
+    max_life_seconds: 300
+  sqlite:
+    # SQLite 数据库文件路径
+    database: database/database.db
+
+# JWT 配置
+jwt:
+  # 过期时间，单位是分钟，一般不超过两个小时
+  expire_time: 120
+  # 允许刷新时间，单位分钟，86400 为两个月，从 Token 的签名时间算起
+  max_refresh_time: 86400
+  # debug 模式下的过期时间，方便本地开发调试
+  debug_expire_time: 86400
+
+# 日志配置
+log:
+  # 日志级别，必须是以下这些选项：
+  # "debug" —— 信息量大，一般调试时打开。系统模块详细运行的日志，例如 HTTP 请求、数据库请求、发送邮件、发送短信
+  # "info" —— 业务级别的运行日志，如用户登录、用户退出、订单撤销。
+  # "warn" —— 感兴趣、需要引起关注的信息。 例如，调试时候打印调试信息（命令行输出会有高亮）。
+  # "error" —— 记录错误信息。Panic 或者 Error。如数据库连接错误、HTTP 端口被占用等。一般生产环境使用的等级。
+  # 以上级别从低到高，level 值设置的级别越高，记录到日志的信息就越少
+  # 开发时推荐使用 "debug" 或者 "info" ，生产环境下使用 "error"
+  level: debug
+  # 日志的类型，可选：
+  # "single" 独立的文件
+  # "daily" 按照日期每日一个
+  type: single
+
+  # ------------------ 滚动日志配置 ------------------
+  # 日志文件路径
+  filename: storage/logs/logs.log
+  # 每个日志文件保存的最大尺寸 单位：M
+  max_size: 64
+  # 最多保存日志文件数，0 为不限，MaxAge 到了还是会删
+  max_backup: 5
+  # 最多保存多少天，7 表示一周前的日志会被删除，0 表示不删
+  max_age: 30
+  # 是否压缩，压缩日志不方便查看，我们设置为 false（压缩可节省空间）
+  compress: false
+
+# 邮件配置
+mail:
+  # 默认是 Mailhog 的配置
+  smtp:
+    host: localhost
+    port: 1025
+    username:
+    password:
+
+  from:
+    address: gohub@example.com
+    name: Gohub
+
+# 分页配置
+paging:
+  # 默认每页条数
+  perpage: 10
+  # URL 中用以分辨多少页的参数
+  # 此值若修改需一并修改请求验证规则
+  url_query_page: page
+  # URL 中用以分辨排序的参数（使用 id 或者其他）
+  # 此值若修改需一并修改请求验证规则
+  url_query_sort: sort
+  # URL 中用以分辨排序规则的参数（辨别是正序还是倒序）
+  # 此值若修改需一并修改请求验证规则
+  url_query_order: order
+  # URL 中用以分辨每页条数的参数
+  # 此值若修改需一并修改请求验证规则
+  url_query_per_page: per_page
+
+# Redis 配置
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  # 业务类存储使用 1 (图片验证码、短信验证码、会话)
+  database: 1
+  # 缓存 cache 包使用 0 ，缓存清空理应当不影响业务
+  database_cache: 0
+
+# 短信配置
+sms:
+  # 默认是阿里云的测试 sign_name 和 template_code
+  aliyun:
+    access_key_id:
+    access_key_secret:
+    sign_name: 阿里云短信测试
+    template_code: SMS_154950909
+
+# 验证码配置
+verifycode:
+  # 验证码的长度
+  code_length: 6
+  # 过期时间，单位是分钟
+  expire_time: 15
+  # debug 模式下的过期时间，方便本地开发调试
+  debug_expire_time: 10080
+  # 本地开发环境验证码使用 debug_code, 使用固定验证码
+  debug_code: 123456
+  # 方便本地和 API 自动测试，直接返回 true
+  debug_phone_prefix: "000"
+  debug_email_suffix: "@testing.com"
+
+
+

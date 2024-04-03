@@ -5,18 +5,12 @@ import (
 	"gohub/app/cmd"
 	"gohub/app/cmd/make"
 	"gohub/bootstrap"
-	btsConig "gohub/config"
 	"gohub/pkg/config"
 	"gohub/pkg/console"
 	"os"
 
 	"github.com/spf13/cobra"
 )
-
-func init() {
-	// 加载 config 目录下的配置信息
-	btsConig.Initialize()
-}
 
 func main() {
 
