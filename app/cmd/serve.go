@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"gohub/bootstrap"
 	"gohub/pkg/app"
 	"gohub/pkg/config"
 	"gohub/pkg/console"
 	"gohub/pkg/logger"
+	"gohub/routes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
@@ -35,7 +35,7 @@ func runWeb(cmd *cobra.Command, args []string) {
 	router := gin.New()
 
 	// 初始化路由绑定
-	bootstrap.SetupRoute(router)
+	routes.SetupRoute(router)
 
 	// 运行服务器
 	err := router.Run(":" + config.Get("app.port"))

@@ -3,6 +3,8 @@ package cache
 
 import (
 	"encoding/json"
+	"fmt"
+	"gohub/pkg/config"
 	"gohub/pkg/logger"
 	"sync"
 	"time"
@@ -17,10 +19,19 @@ type CacheService struct {
 var once sync.Once
 var Cache *CacheService
 
-func InitWithCacheStore(store Store) {
+func SetupCache() {
+
+	// 初始化缓存专用的 redis client, 使用专属缓存 DB
+	rds := NewRedisStore(
+		fmt.Sprintf("%v:%v", config.GetString("redis.host"), config.GetString("redis.port")),
+		config.GetString("redis.username"),
+		config.GetString("redis.password"),
+		config.GetInt("redis.database_cache"),
+	)
+
 	once.Do(func() {
 		Cache = &CacheService{
-			Store: store,
+			Store: rds,
 		}
 	})
 }

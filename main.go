@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"gohub/app/cmd"
 	"gohub/app/cmd/make"
-	"gohub/bootstrap"
+	"gohub/pkg/cache"
 	"gohub/pkg/config"
 	"gohub/pkg/console"
+	"gohub/pkg/database"
+	"gohub/pkg/eth"
+	"gohub/pkg/logger"
+	"gohub/pkg/redis"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -27,16 +31,19 @@ func main() {
 			config.InitConfig(cmd.Env)
 
 			// 初始化 Logger
-			bootstrap.SetupLogger()
+			logger.SetupLogger()
 
 			// 初始化数据库
-			bootstrap.SetupDB()
+			database.SetupDB()
 
 			// 初始化 Redis
-			bootstrap.SetupRedis()
+			redis.SetupRedis()
 
 			// 初始化缓存
-			bootstrap.SetupCache()
+			cache.SetupCache()
+
+			// 初始化以太坊客户端
+			eth.SetupEth()
 		},
 	}
 

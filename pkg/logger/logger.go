@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gohub/pkg/app"
+	"gohub/pkg/config"
 	"os"
 	"strings"
 	"time"
@@ -16,6 +17,19 @@ import (
 
 // Logger 全局 Logger 对象
 var Logger *zap.Logger
+
+// SetupLogger 初始化 Logger
+func SetupLogger() {
+	InitLogger(
+		config.GetString("log.filename"),
+		config.GetInt("log.max_size"),
+		config.GetInt("log.max_backup"),
+		config.GetInt("log.max_age"),
+		config.GetBool("log.compress"),
+		config.GetString("log.type"),
+		config.GetString("log.level"),
+	)
+}
 
 // InitLogger 日志初始化
 func InitLogger(filename string, maxSize, maxBackup, maxAge int, compress bool, logType string, level string) {
@@ -164,6 +178,10 @@ func Warn(moduleName string, fields ...zap.Field) {
 // Error 错误时记录，不应该中断程序，查看日志时重点关注
 func Error(moduleName string, fields ...zap.Field) {
 	Logger.Error(moduleName, fields...)
+}
+
+func ErrorE(moduleName string, name string, error error) {
+	Logger.Error(moduleName, zap.String(name, error.Error()))
 }
 
 // Fatal 级别同 Error(), 写完 log 后调用 os.Exit(1) 退出程序

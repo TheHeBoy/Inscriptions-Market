@@ -3,6 +3,8 @@ package redis
 
 import (
 	"context"
+	"fmt"
+	"gohub/pkg/config"
 	"gohub/pkg/logger"
 	"sync"
 	"time"
@@ -21,6 +23,17 @@ var once sync.Once
 
 // Redis 全局 Redis，使用 db 1
 var Redis *RedisClient
+
+// SetupRedis 初始化 Redis
+func SetupRedis() {
+	// 建立 Redis 连接
+	ConnectRedis(
+		fmt.Sprintf("%v:%v", config.GetString("redis.host"), config.GetString("redis.port")),
+		config.GetString("redis.username"),
+		config.GetString("redis.password"),
+		config.GetInt("redis.database"),
+	)
+}
 
 // ConnectRedis 连接 redis 数据库，设置全局的 Redis 对象
 func ConnectRedis(address string, username string, password string, db int) {
