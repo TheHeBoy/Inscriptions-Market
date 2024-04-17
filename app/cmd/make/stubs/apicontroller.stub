@@ -15,7 +15,7 @@ type {{StructNamePlural}}Controller struct {
 
 func (ctrl *{{StructNamePlural}}Controller) Index(c *gin.Context) {
     {{VariableNamePlural}} := {{PackageName}}.All()
-    response.Data(c, {{VariableNamePlural}})
+    response.SuccessData(c, {{VariableNamePlural}})
 }
 
 func (ctrl *{{StructNamePlural}}Controller) Show(c *gin.Context) {
@@ -24,7 +24,7 @@ func (ctrl *{{StructNamePlural}}Controller) Show(c *gin.Context) {
         response.Abort404(c)
         return
     }
-    response.Data(c, {{VariableName}}Model)
+    response.SuccessData(c, {{VariableName}}Model)
 }
 
 func (ctrl *{{StructNamePlural}}Controller) Store(c *gin.Context) {
@@ -71,7 +71,7 @@ func (ctrl *{{StructNamePlural}}Controller) Update(c *gin.Context) {
     {{VariableName}}Model.FieldName = request.FieldName
     rowsAffected := {{VariableName}}Model.Save()
     if rowsAffected > 0 {
-        response.Data(c, {{VariableName}}Model)
+        response.SuccessData(c, {{VariableName}}Model)
     } else {
         response.Abort500(c, "更新失败，请稍后尝试~")
     }

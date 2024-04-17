@@ -75,7 +75,7 @@ func Paginate(c *gin.Context, db *gorm.DB, data interface{}, baseURL string, per
 
 	// 数据库出错
 	if err != nil {
-		logger.LogIf(err)
+		logger.Error(err)
 		return Paging{}
 	}
 

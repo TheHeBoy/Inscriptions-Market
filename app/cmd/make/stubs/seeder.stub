@@ -19,7 +19,7 @@ func init() {
         result := db.Table("{{TableName}}").Create(&{{VariableNamePlural}})
 
         if err := result.Error; err != nil {
-            logger.LogIf(err)
+            logger.Error(err)
             return
         }
 

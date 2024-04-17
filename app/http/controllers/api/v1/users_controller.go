@@ -4,8 +4,7 @@ import (
 	"gohub/app/models/user"
 	"gohub/app/requests"
 	"gohub/pkg/auth"
-	"gohub/pkg/config"
-	"gohub/pkg/file"
+	"gohub/pkg/errorcode"
 	"gohub/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +17,7 @@ type UsersController struct {
 // CurrentUser 当前登录用户信息
 func (ctrl *UsersController) CurrentUser(c *gin.Context) {
 	userModel := auth.CurrentUser(c)
-	response.Data(c, userModel)
+	response.SuccessData(c, userModel)
 }
 
 // Index 所有用户
@@ -29,7 +28,7 @@ func (ctrl *UsersController) Index(c *gin.Context) {
 	}
 
 	data, pager := user.Paginate(c, 10)
-	response.JSON(c, gin.H{
+	response.SuccessData(c, gin.H{
 		"data":  data,
 		"pager": pager,
 	})
@@ -48,9 +47,9 @@ func (ctrl *UsersController) UpdateProfile(c *gin.Context) {
 	currentUser.Introduction = request.Introduction
 	rowsAffected := currentUser.Save()
 	if rowsAffected > 0 {
-		response.Data(c, currentUser)
+		response.SuccessData(c, currentUser)
 	} else {
-		response.Abort500(c, "更新失败，请稍后尝试~")
+		response.Error(c, errorcode.USER_UPDATE_FAIL)
 	}
 }
 
@@ -69,7 +68,7 @@ func (ctrl *UsersController) UpdateEmail(c *gin.Context) {
 		response.Success(c)
 	} else {
 		// 失败，显示错误提示
-		response.Abort500(c, "更新失败，请稍后尝试~")
+		response.Error(c, errorcode.USER_UPDATE_FAIL)
 	}
 }
 
@@ -87,7 +86,7 @@ func (ctrl *UsersController) UpdatePhone(c *gin.Context) {
 	if rowsAffected > 0 {
 		response.Success(c)
 	} else {
-		response.Abort500(c, "更新失败，请稍后尝试~")
+		response.Error(c, errorcode.USER_UPDATE_FAIL)
 	}
 }
 
@@ -103,7 +102,7 @@ func (ctrl *UsersController) UpdatePassword(c *gin.Context) {
 	_, err := auth.Attempt(currentUser.Name, request.Password)
 	if err != nil {
 		// 失败，显示错误提示
-		response.Unauthorized(c, "原密码不正确")
+		response.ErrorCustom(c, errorcode.AUTH_JWT_UNAUTHORIZED.Code, "原密码不正确")
 	} else {
 		// 更新密码为新密码
 		currentUser.Password = request.NewPassword
@@ -111,24 +110,4 @@ func (ctrl *UsersController) UpdatePassword(c *gin.Context) {
 
 		response.Success(c)
 	}
-}
-
-func (ctrl *UsersController) UpdateAvatar(c *gin.Context) {
-
-	request := requests.UserUpdateAvatarRequest{}
-	if ok := requests.Validate(c, &request, requests.UserUpdateAvatar); !ok {
-		return
-	}
-
-	avatar, err := file.SaveUploadAvatar(c, request.Avatar)
-	if err != nil {
-		response.Abort500(c, "上传头像失败，请稍后尝试~")
-		return
-	}
-
-	currentUser := auth.CurrentUser(c)
-	currentUser.Avatar = config.GetString("app.url") + avatar
-	currentUser.Save()
-
-	response.Data(c, currentUser)
 }

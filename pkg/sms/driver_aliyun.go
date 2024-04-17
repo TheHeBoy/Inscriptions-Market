@@ -17,14 +17,14 @@ type Aliyun struct{}
 func (a *Aliyun) Send(phone string, message Message, config map[string]string) bool {
 	client, err := CreateClient(tea.String(config["access_key_id"]), tea.String(config["access_key_secret"]))
 	if err != nil {
-		logger.ErrorString("短信[阿里云]", "解析绑定错误", err.Error())
+		logger.Error("短信[阿里云]", "解析绑定错误", err.Error())
 		return false
 	}
-	logger.DebugJSON("短信[阿里云]", "配置信息", config)
+	logger.Debug("短信[阿里云]", "配置信息", config)
 
 	param, err := json.Marshal(message.Data)
 	if err != nil {
-		logger.ErrorString("短信[阿里云]", "短信模板参数解析错误", err.Error())
+		logger.Error("短信[阿里云]", "短信模板参数解析错误", err.Error())
 		return false
 	}
 
@@ -50,7 +50,7 @@ func (a *Aliyun) Send(phone string, message Message, config map[string]string) b
 
 		var r dysmsapi20170525.SendSmsResponseBody
 		err = json.Unmarshal([]byte(*errs.Data), &r)
-		logger.LogIf(err)
+		logger.ErrorIf(err)
 
 		return false
 	}

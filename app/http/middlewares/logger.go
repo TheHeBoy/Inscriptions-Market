@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
-	"go.uber.org/zap"
 )
 
 type responseBodyWriter struct {
@@ -48,31 +47,31 @@ func Logger() gin.HandlerFunc {
 		cost := time.Since(start)
 		responStatus := c.Writer.Status()
 
-		logFields := []zap.Field{
-			zap.Int("status", responStatus),
-			zap.String("request", c.Request.Method+" "+c.Request.URL.String()),
-			zap.String("query", c.Request.URL.RawQuery),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.String("time", helpers.MicrosecondsStr(cost)),
+		logFields := map[string]any{
+			"status":     responStatus,
+			"request":    c.Request.Method + " " + c.Request.URL.String(),
+			"query":      c.Request.URL.RawQuery,
+			"ip":         c.ClientIP(),
+			"user-agent": c.Request.UserAgent(),
+			"errors":     c.Errors.ByType(gin.ErrorTypePrivate).String(),
+			"time":       helpers.MicrosecondsStr(cost),
 		}
 		if c.Request.Method == "POST" || c.Request.Method == "PUT" || c.Request.Method == "DELETE" {
 			// 请求的内容
-			logFields = append(logFields, zap.String("Request Body", string(requestBody)))
+			logFields["Request Body"] = string(requestBody)
 
 			// 响应的内容
-			logFields = append(logFields, zap.String("Response Body", w.body.String()))
+			logFields["Response Body"] = w.body.String()
 		}
 
 		if responStatus > 400 && responStatus <= 499 {
 			// 除了 StatusBadRequest 以外，warning 提示一下，常见的有 403 404，开发时都要注意
-			logger.Warn("HTTP Warning "+cast.ToString(responStatus), logFields...)
+			logger.Warn("HTTP Warning "+cast.ToString(responStatus), logFields)
 		} else if responStatus >= 500 && responStatus <= 599 {
 			// 除了内部错误，记录 error
-			logger.Error("HTTP Error "+cast.ToString(responStatus), logFields...)
+			logger.Error("HTTP Error "+cast.ToString(responStatus), logFields)
 		} else {
-			logger.Debug("HTTP Access Log", logFields...)
+			logger.Debug("HTTP Access Log", logFields)
 		}
 	}
 }

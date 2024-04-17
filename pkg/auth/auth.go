@@ -37,7 +37,7 @@ func LoginByPhone(phone string) (user.User, error) {
 func CurrentUser(c *gin.Context) user.User {
 	userModel, ok := c.MustGet("current_user").(user.User)
 	if !ok {
-		logger.LogIf(errors.New("无法获取用户"))
+		logger.Error(errors.New("无法获取用户"))
 		return user.User{}
 	}
 	// db is now a *DB value

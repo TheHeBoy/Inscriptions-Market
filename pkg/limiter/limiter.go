@@ -29,7 +29,7 @@ func CheckRate(c *gin.Context, key string, formatted string) (limiterlib.Context
 	var context limiterlib.Context
 	rate, err := limiterlib.NewRateFromFormatted(formatted)
 	if err != nil {
-		logger.LogIf(err)
+		logger.Error(err)
 		return context, err
 	}
 
@@ -39,7 +39,7 @@ func CheckRate(c *gin.Context, key string, formatted string) (limiterlib.Context
 		Prefix: config.GetString("app.name") + ":limiter",
 	})
 	if err != nil {
-		logger.LogIf(err)
+		logger.Error(err)
 		return context, err
 	}
 

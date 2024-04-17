@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"gohub/pkg/errorcode"
 	"gohub/pkg/logger"
 	"gohub/pkg/response"
 	"net"
@@ -54,8 +55,7 @@ func Recovery() gin.HandlerFunc {
 					zap.Stack("stacktrace"),                    // 调用堆栈信息
 				)
 
-				// 返回 500 状态码
-				response.Abort500(c)
+				response.Error(c, errorcode.SERVICE_INTERNAL_ERROR)
 			}
 		}()
 		c.Next()

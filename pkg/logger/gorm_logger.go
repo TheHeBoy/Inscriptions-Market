@@ -27,7 +27,7 @@ type GormLogger struct {
 //	})
 func NewGormLogger() GormLogger {
 	return GormLogger{
-		ZapLogger:     Logger,                 // 使用全局的 logger.Logger 对象
+		ZapLogger:     LogZap,                 // 使用全局的 logger.Logger 对象
 		SlowThreshold: 200 * time.Millisecond, // 慢查询阈值，单位为千分之一秒
 	}
 }
@@ -101,7 +101,7 @@ func (l GormLogger) logger() *zap.Logger {
 	)
 
 	// 减去一次封装，以及一次在 logger 初始化里添加 zap.AddCallerSkip(1)
-	clone := l.ZapLogger.WithOptions(zap.AddCallerSkip(-2))
+	clone := LogZap.WithOptions(zap.AddCallerSkip(-2))
 
 	for i := 2; i < 15; i++ {
 		_, file, _, ok := runtime.Caller(i)

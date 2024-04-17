@@ -2,7 +2,6 @@
 package logger
 
 import (
-	"encoding/json"
 	"fmt"
 	"gohub/pkg/app"
 	"gohub/pkg/config"
@@ -16,7 +15,8 @@ import (
 )
 
 // Logger 全局 Logger 对象
-var Logger *zap.Logger
+var Logger *zap.SugaredLogger
+var LogZap *zap.Logger
 
 // SetupLogger 初始化 Logger
 func SetupLogger() {
@@ -47,15 +47,14 @@ func InitLogger(filename string, maxSize, maxBackup, maxAge int, compress bool, 
 	core := zapcore.NewCore(getEncoder(), writeSyncer, logLevel)
 
 	// 初始化 Logger
-	Logger = zap.New(core,
+	LogZap = zap.New(core,
 		zap.AddCaller(),                   // 调用文件和行号，内部使用 runtime.Caller
 		zap.AddCallerSkip(1),              // 封装了一层，调用文件去除一层(runtime.Caller(1))
 		zap.AddStacktrace(zap.ErrorLevel), // Error 时才会显示 stacktrace
 	)
+	Logger = LogZap.Sugar()
 
-	// 将自定义的 logger 替换为全局的 logger
-	// zap.L().Fatal() 调用时，就会使用我们自定的 Logger
-	zap.ReplaceGlobals(Logger)
+	defer Logger.Sync()
 }
 
 // getEncoder 设置日志存储格式
@@ -121,124 +120,94 @@ func getLogWriter(filename string, maxSize, maxBackup, maxAge int, compress bool
 	}
 }
 
-// Dump 调试专用，不会中断程序，会在终端打印出 warning 消息。
-// 第一个参数会使用 json.Marshal 进行渲染，第二个参数消息（可选）
-//
-//	logger.Dump(user.User{Name:"test"})
-//	logger.Dump(user.User{Name:"test"}, "用户信息")
-func Dump(value interface{}, msg ...string) {
-	valueString := jsonString(value)
-	// 判断第二个参数是否传参 msg
-	if len(msg) > 0 {
-		Logger.Warn("Dump", zap.String(msg[0], valueString))
+// Debug is a package-level function that calls the Debug method on the Logger
+func Debug(args ...any) {
+	if len(args) > 1 {
+		Logger.Debug(fmt.Sprint(args))
 	} else {
-		Logger.Warn("Dump", zap.String("data", valueString))
+		Logger.Debug(args)
 	}
 }
 
-// LogIf 当 err != nil 时记录 error 等级的日志
-func LogIf(err error) {
+// Info is a package-level function that calls the Info method on the Logger
+func Info(args ...any) {
+	if len(args) > 1 {
+		Logger.Info(fmt.Sprint(args))
+	} else {
+		Logger.Info(args)
+	}
+}
+
+// Warn is a package-level function that calls the Warn method on the Logger
+func Warn(args ...any) {
+	if len(args) > 1 {
+		Logger.Warn(fmt.Sprint(args))
+	} else {
+		Logger.Warn(args)
+	}
+}
+
+// Error is a package-level function that calls the Error method on the Logger
+func Error(args ...any) {
+	if len(args) > 1 {
+		Logger.Error(fmt.Sprint(args))
+	} else {
+		Logger.Error(args)
+	}
+}
+
+func ErrorIf(err error) {
 	if err != nil {
-		Logger.Error("Error Occurred:", zap.Error(err))
+		Logger.Error(err)
 	}
 }
 
-// LogWarnIf 当 err != nil 时记录 warning 等级的日志
-func LogWarnIf(err error) {
-	if err != nil {
-		Logger.Warn("Error Occurred:", zap.Error(err))
-	}
+// DPanic is a package-level function that calls the DPanic method on the Logger
+func DPanic(args ...any) {
+	Logger.DPanic(args...)
 }
 
-// LogInfoIf 当 err != nil 时记录 info 等级的日志
-func LogInfoIf(err error) {
-	if err != nil {
-		Logger.Info("Error Occurred:", zap.Error(err))
-	}
+// Panic is a package-level function that calls the Panic method on the Logger
+func Panic(args ...any) {
+	Logger.Panic(args...)
 }
 
-// Debug 调试日志，详尽的程序日志
-// 调用示例：
-//
-//	logger.Debug("Database", zap.String("sql", sql))
-func Debug(moduleName string, fields ...zap.Field) {
-	Logger.Debug(moduleName, fields...)
+// Fatal is a package-level function that calls the Fatal method on the Logger
+func Fatal(args ...any) {
+	Logger.Fatal(args...)
 }
 
-// Info 告知类日志
-func Info(moduleName string, fields ...zap.Field) {
-	Logger.Info(moduleName, fields...)
+// Debugf is a package-level function that calls the Debugf method on the Logger
+func Debugf(template string, args ...any) {
+	Logger.Debugf(template, args...)
 }
 
-// Warn 警告类
-func Warn(moduleName string, fields ...zap.Field) {
-	Logger.Warn(moduleName, fields...)
+// Infof is a package-level function that calls the Infof method on the Logger
+func Infof(template string, args ...any) {
+	Logger.Infof(template, args...)
 }
 
-// Error 错误时记录，不应该中断程序，查看日志时重点关注
-func Error(moduleName string, fields ...zap.Field) {
-	Logger.Error(moduleName, fields...)
+// Warnf is a package-level function that calls the Warnf method on the Logger
+func Warnf(template string, args ...any) {
+	Logger.Warnf(template, args...)
 }
 
-func ErrorE(moduleName string, name string, error error) {
-	Logger.Error(moduleName, zap.String(name, error.Error()))
+// Errorf is a package-level function that calls the Errorf method on the Logger
+func Errorf(template string, args ...any) {
+	Logger.Errorf(template, args...)
 }
 
-// Fatal 级别同 Error(), 写完 log 后调用 os.Exit(1) 退出程序
-func Fatal(moduleName string, fields ...zap.Field) {
-	Logger.Fatal(moduleName, fields...)
+// DPanicf is a package-level function that calls the DPanicf method on the Logger
+func DPanicf(template string, args ...any) {
+	Logger.DPanicf(template, args...)
 }
 
-// DebugString 记录一条字符串类型的 debug 日志，调用示例：
-//
-//	logger.DebugString("SMS", "短信内容", string(result.RawResponse))
-func DebugString(moduleName, name, msg string) {
-	Logger.Debug(moduleName, zap.String(name, msg))
+// Panicf is a package-level function that calls the Panicf method on the Logger
+func Panicf(template string, args ...any) {
+	Logger.Panicf(template, args...)
 }
 
-func InfoString(moduleName, name, msg string) {
-	Logger.Info(moduleName, zap.String(name, msg))
-}
-
-func WarnString(moduleName, name, msg string) {
-	Logger.Warn(moduleName, zap.String(name, msg))
-}
-
-func ErrorString(moduleName, name, msg string) {
-	Logger.Error(moduleName, zap.String(name, msg))
-}
-
-func FatalString(moduleName, name, msg string) {
-	Logger.Fatal(moduleName, zap.String(name, msg))
-}
-
-// DebugJSON 记录对象类型的 debug 日志，使用 json.Marshal 进行编码。调用示例：
-//
-//	logger.DebugJSON("Auth", "读取登录用户", auth.CurrentUser())
-func DebugJSON(moduleName, name string, value interface{}) {
-	Logger.Debug(moduleName, zap.String(name, jsonString(value)))
-}
-
-func InfoJSON(moduleName, name string, value interface{}) {
-	Logger.Info(moduleName, zap.String(name, jsonString(value)))
-}
-
-func WarnJSON(moduleName, name string, value interface{}) {
-	Logger.Warn(moduleName, zap.String(name, jsonString(value)))
-}
-
-func ErrorJSON(moduleName, name string, value interface{}) {
-	Logger.Error(moduleName, zap.String(name, jsonString(value)))
-}
-
-func FatalJSON(moduleName, name string, value interface{}) {
-	Logger.Fatal(moduleName, zap.String(name, jsonString(value)))
-}
-
-func jsonString(value interface{}) string {
-	b, err := json.Marshal(value)
-	if err != nil {
-		Logger.Error("Logger", zap.String("JSON marshal error", err.Error()))
-	}
-	return string(b)
+// Fatalf is a package-level function that calls the Fatalf method on the Logger
+func Fatalf(template string, args ...any) {
+	Logger.Fatalf(template, args...)
 }

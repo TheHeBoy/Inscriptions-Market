@@ -27,7 +27,7 @@ func getPublicAddress(privateKey *ecdsa.PrivateKey) common.Address {
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		logger.ErrorString("eth", "getPublicAddress", "cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		logger.Error("eth", "getPublicAddress", "cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 	}
 	return crypto.PubkeyToAddress(*publicKeyECDSA)
 }

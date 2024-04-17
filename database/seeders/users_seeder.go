@@ -23,7 +23,7 @@ func init() {
 
 		// 记录错误
 		if err := result.Error; err != nil {
-			logger.LogIf(err)
+			logger.Error(err)
 			return
 		}
 

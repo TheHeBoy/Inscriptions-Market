@@ -4,7 +4,9 @@ import (
 	v1 "gohub/app/http/controllers/api/v1"
 	"gohub/app/requests"
 	"gohub/pkg/auth"
+	"gohub/pkg/errorcode"
 	"gohub/pkg/jwt"
+	"gohub/pkg/logger"
 	"gohub/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -27,13 +29,14 @@ func (lc *LoginController) LoginByPhone(c *gin.Context) {
 	// 2. 尝试登录
 	user, err := auth.LoginByPhone(request.Phone)
 	if err != nil {
+		logger.Error(err)
 		// 失败，显示错误提示
-		response.Error(c, err, "账号不存在或密码错误")
+		response.Error(c, errorcode.AUTH_ACCOUNT_OR_PASSWD_NOT_EXIST)
 	} else {
 		// 登录成功
 		token := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
 
-		response.JSON(c, gin.H{
+		response.SuccessData(c, gin.H{
 			"token": token,
 		})
 	}
@@ -51,11 +54,11 @@ func (lc *LoginController) LoginByPassword(c *gin.Context) {
 	user, err := auth.Attempt(request.LoginID, request.Password)
 	if err != nil {
 		// 失败，显示错误提示
-		response.Unauthorized(c, "账号不存在或密码错误")
+		response.Error(c, errorcode.AUTH_ACCOUNT_OR_PASSWD_NOT_EXIST)
 
 	} else {
 		token := jwt.NewJWT().IssueToken(user.GetStringID(), user.Name)
-		response.JSON(c, gin.H{
+		response.SuccessData(c, gin.H{
 			"token": token,
 		})
 	}
@@ -67,9 +70,10 @@ func (lc *LoginController) RefreshToken(c *gin.Context) {
 	token, err := jwt.NewJWT().RefreshToken(c)
 
 	if err != nil {
-		response.Error(c, err, "令牌刷新失败")
+		logger.Error(err)
+		response.Error(c, errorcode.AUTH_TOKEN_REFRESH_FAIL)
 	} else {
-		response.JSON(c, gin.H{
+		response.SuccessData(c, gin.H{
 			"token": token,
 		})
 	}
