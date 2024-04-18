@@ -7,11 +7,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/pkg/errors"
+	"github.com/storyicon/sigverify"
 	"gohub/pkg/config"
 	"gohub/pkg/logger"
 	"math/big"
 )
 
+var (
+	ErrSignatureMismatch = errors.New("签名不匹配")
+)
 var Client *ethclient.Client
 
 func SetupEth() {
@@ -30,6 +35,22 @@ func getPublicAddress(privateKey *ecdsa.PrivateKey) common.Address {
 		logger.Error("eth", "getPublicAddress", "cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 	}
 	return crypto.PubkeyToAddress(*publicKeyECDSA)
+}
+
+// VerifySignature 验证以太坊签名
+func VerifySignature(address, message, signature string) error {
+	valid, err := sigverify.VerifyEllipticCurveHexSignatureEx(
+		common.HexToAddress(address),
+		[]byte(message),
+		signature,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	if !valid {
+		return errors.New("签名验证失败")
+	}
+	return nil
 }
 
 // getTransactor

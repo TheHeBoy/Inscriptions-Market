@@ -36,7 +36,7 @@ func ResetByPhone(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 
 	// 检查验证码
 	_data := data.(*ResetByPhoneRequest)
@@ -76,7 +76,7 @@ func ResetByEmail(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 
 	// 检查验证码
 	_data := data.(*ResetByEmailRequest)

@@ -1,17 +1,16 @@
-package v1
+package admin
 
 import (
 	"gohub/app/models/user"
 	"gohub/app/requests"
 	"gohub/pkg/auth"
-	"gohub/pkg/errorcode"
+	"gohub/pkg/logger"
 	"gohub/pkg/response"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UsersController struct {
-	BaseAPIController
 }
 
 // CurrentUser 当前登录用户信息
@@ -49,7 +48,7 @@ func (ctrl *UsersController) UpdateProfile(c *gin.Context) {
 	if rowsAffected > 0 {
 		response.SuccessData(c, currentUser)
 	} else {
-		response.Error(c, errorcode.USER_UPDATE_FAIL)
+		response.ErrorStr(c, "更新用户信息失败")
 	}
 }
 
@@ -68,7 +67,7 @@ func (ctrl *UsersController) UpdateEmail(c *gin.Context) {
 		response.Success(c)
 	} else {
 		// 失败，显示错误提示
-		response.Error(c, errorcode.USER_UPDATE_FAIL)
+		response.ErrorStr(c, "更新邮箱失败")
 	}
 }
 
@@ -86,7 +85,7 @@ func (ctrl *UsersController) UpdatePhone(c *gin.Context) {
 	if rowsAffected > 0 {
 		response.Success(c)
 	} else {
-		response.Error(c, errorcode.USER_UPDATE_FAIL)
+		response.ErrorStr(c, "更新手机号失败")
 	}
 }
 
@@ -101,8 +100,8 @@ func (ctrl *UsersController) UpdatePassword(c *gin.Context) {
 	// 验证原始密码是否正确
 	_, err := auth.Attempt(currentUser.Name, request.Password)
 	if err != nil {
-		// 失败，显示错误提示
-		response.ErrorCustom(c, errorcode.AUTH_JWT_UNAUTHORIZED.Code, "原密码不正确")
+		logger.Error(err)
+		response.Error(c, err)
 	} else {
 		// 更新密码为新密码
 		currentUser.Password = request.NewPassword

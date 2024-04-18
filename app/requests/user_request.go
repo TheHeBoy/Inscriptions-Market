@@ -41,7 +41,7 @@ func UserUpdateProfile(data interface{}, c *gin.Context) map[string][]string {
 			"max_cn:城市不能超过 20 个字",
 		},
 	}
-	return validate(data, rules, messages)
+	return ValidateData(data, rules, messages)
 }
 
 type UserUpdateEmailRequest struct {
@@ -77,7 +77,7 @@ func UserUpdateEmail(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 	_data := data.(*UserUpdateEmailRequest)
 	errs = validators.ValidateVerifyCode(_data.Email, _data.VerifyCode, errs)
 
@@ -115,7 +115,7 @@ func UserUpdatePhone(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 	_data := data.(*UserUpdatePhoneRequest)
 	errs = validators.ValidateVerifyCode(_data.Phone, _data.VerifyCode, errs)
 
@@ -150,7 +150,7 @@ func UserUpdatePassword(data interface{}, c *gin.Context) map[string][]string {
 	}
 
 	// 确保 comfirm 密码正确
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 	_data := data.(*UserUpdatePasswordRequest)
 	errs = validators.ValidatePasswordConfirm(_data.NewPassword, _data.NewPasswordConfirm, errs)
 

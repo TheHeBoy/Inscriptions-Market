@@ -2,11 +2,12 @@
 package middlewares
 
 import (
+	"errors"
 	"fmt"
 	"gohub/app/models/user"
 	"gohub/pkg/config"
-	"gohub/pkg/errorcode"
 	"gohub/pkg/jwt"
+	"gohub/pkg/logger"
 	"gohub/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -20,14 +21,19 @@ func AuthJWT() gin.HandlerFunc {
 
 		// JWT 解析失败，有错误发生
 		if err != nil {
-			response.ErrorCustom(c, errorcode.AUTH_JWT_UNAUTHORIZED.Code, fmt.Sprintf("请查看 %v 相关的接口认证文档", config.GetString("app.name")))
+			logger.Errorf("JWT 解析失败:%+v", err)
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				response.Error403(c, err)
+			} else {
+				response.ErrorStr(c, fmt.Sprintf("请查看 %v 相关的接口认证文档", config.GetString("app.name")))
+			}
 			return
 		}
 
 		// JWT 解析成功，设置用户信息
 		userModel := user.Get(claims.UserID)
 		if userModel.ID == 0 {
-			response.ErrorCustom(c, errorcode.AUTH_JWT_UNAUTHORIZED.Code, "找不到对应用户，用户可能已删除")
+			response.ErrorStr(c, "找不到对应用户，用户可能已删除")
 			return
 		}
 

@@ -2,7 +2,6 @@
 package middlewares
 
 import (
-	"gohub/pkg/errorcode"
 	"gohub/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +13,7 @@ func ForceUA() gin.HandlerFunc {
 
 		// 获取 User-Agent 标头信息
 		if len(c.Request.Header["User-Agent"]) == 0 {
-			response.ErrorCustom(c, errorcode.BAD_REQUEST.Code, "请求必须附带 User-Agent 标头")
+			response.ErrorStr(c, "请求必须附带 User-Agent 标头")
 			return
 		}
 

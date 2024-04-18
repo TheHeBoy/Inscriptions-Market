@@ -46,7 +46,10 @@ func SetupDB() {
 	}
 
 	// 连接数据库，并设置 GORM 的日志模式
-	Connect(dbConfig, logger.NewGormLogger())
+	err := Connect(dbConfig, logger.NewGormLogger())
+	if err != nil {
+		panic(err)
+	}
 
 	// 设置最大连接数
 	SQLDB.SetMaxOpenConns(config.GetInt("database.mysql.max_open_connections"))
@@ -57,7 +60,7 @@ func SetupDB() {
 }
 
 // Connect 连接数据库
-func Connect(dbConfig gorm.Dialector, _logger gormlogger.Interface) {
+func Connect(dbConfig gorm.Dialector, _logger gormlogger.Interface) error {
 
 	// 使用 gorm.Open 连接数据库
 	var err error
@@ -66,14 +69,15 @@ func Connect(dbConfig gorm.Dialector, _logger gormlogger.Interface) {
 	})
 	// 处理错误
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 
 	// 获取底层的 sqlDB
 	SQLDB, err = DB.DB()
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
+	return nil
 }
 func CurrentDatabase() (dbname string) {
 	dbname = DB.Migrator().CurrentDatabase()
@@ -86,7 +90,10 @@ func DeleteAllTables() error {
 	case "mysql":
 		err = deleteMySQLTables()
 	case "sqlite":
-		deleteAllSqliteTables()
+		err := deleteAllSqliteTables()
+		if err != nil {
+			return err
+		}
 	default:
 		panic(errors.New("database connection not supported"))
 	}

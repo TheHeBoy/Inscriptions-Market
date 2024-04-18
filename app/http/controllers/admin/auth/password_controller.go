@@ -2,10 +2,8 @@
 package auth
 
 import (
-	v1 "gohub/app/http/controllers/api/v1"
 	"gohub/app/models/user"
 	"gohub/app/requests"
-	"gohub/pkg/errorcode"
 	"gohub/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +11,6 @@ import (
 
 // PasswordController 用户控制器
 type PasswordController struct {
-	v1.BaseAPIController
 }
 
 // ResetByPhone 使用手机和验证码重置密码
@@ -27,7 +24,7 @@ func (pc *PasswordController) ResetByPhone(c *gin.Context) {
 	// 2. 更新密码
 	userModel := user.GetByPhone(request.Phone)
 	if userModel.ID == 0 {
-		response.Error(c, errorcode.USER_NO_EXIST)
+		response.ErrorStr(c, "用户不存在")
 	} else {
 		userModel.Password = request.Password
 		userModel.Save()
@@ -47,7 +44,7 @@ func (pc *PasswordController) ResetByEmail(c *gin.Context) {
 	// 2. 更新密码
 	userModel := user.GetByEmail(request.Email)
 	if userModel.ID == 0 {
-		response.Error(c, errorcode.USER_NO_EXIST)
+		response.ErrorStr(c, "用户不存在")
 	} else {
 		userModel.Password = request.Password
 		userModel.Save()

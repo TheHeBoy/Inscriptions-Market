@@ -48,9 +48,8 @@ func InitLogger(filename string, maxSize, maxBackup, maxAge int, compress bool, 
 
 	// 初始化 Logger
 	LogZap = zap.New(core,
-		zap.AddCaller(),                   // 调用文件和行号，内部使用 runtime.Caller
-		zap.AddCallerSkip(1),              // 封装了一层，调用文件去除一层(runtime.Caller(1))
-		zap.AddStacktrace(zap.ErrorLevel), // Error 时才会显示 stacktrace
+		zap.AddCaller(),      // 调用文件和行号，内部使用 runtime.Caller
+		zap.AddCallerSkip(1), // 封装了一层，调用文件去除一层(runtime.Caller(1))
 	)
 	Logger = LogZap.Sugar()
 
@@ -122,44 +121,48 @@ func getLogWriter(filename string, maxSize, maxBackup, maxAge int, compress bool
 
 // Debug is a package-level function that calls the Debug method on the Logger
 func Debug(args ...any) {
-	if len(args) > 1 {
-		Logger.Debug(fmt.Sprint(args))
-	} else {
-		Logger.Debug(args)
-	}
+	Logger.Debug(args)
 }
 
 // Info is a package-level function that calls the Info method on the Logger
 func Info(args ...any) {
-	if len(args) > 1 {
-		Logger.Info(fmt.Sprint(args))
-	} else {
-		Logger.Info(args)
-	}
+	Logger.Info(args)
 }
 
 // Warn is a package-level function that calls the Warn method on the Logger
 func Warn(args ...any) {
-	if len(args) > 1 {
-		Logger.Warn(fmt.Sprint(args))
-	} else {
-		Logger.Warn(args)
-	}
+	Logger.Warn(args)
 }
 
 // Error is a package-level function that calls the Error method on the Logger
 func Error(args ...any) {
-	if len(args) > 1 {
-		Logger.Error(fmt.Sprint(args))
-	} else {
-		Logger.Error(args)
-	}
+	Logger.Error(args)
 }
 
 func ErrorIf(err error) {
 	if err != nil {
 		Logger.Error(err)
 	}
+}
+
+// Debugw is a package-level function that calls the Debugw method on the Logger
+func Debugw(msg string, keysAndValues ...interface{}) {
+	Logger.Debugw(msg, keysAndValues...)
+}
+
+// Infow is a package-level function that calls the Infow method on the Logger
+func Infow(msg string, keysAndValues ...interface{}) {
+	Logger.Infow(msg, keysAndValues...)
+}
+
+// Warnw is a package-level function that calls the Warnw method on the Logger
+func Warnw(msg string, keysAndValues ...interface{}) {
+	Logger.Warnw(msg, keysAndValues...)
+}
+
+// Errorw is a package-level function that calls the Errorw method on the Logger
+func Errorw(msg string, keysAndValues ...interface{}) {
+	Logger.Errorw(msg, keysAndValues...)
 }
 
 // DPanic is a package-level function that calls the DPanic method on the Logger

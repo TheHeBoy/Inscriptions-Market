@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"gohub/pkg/errorcode"
 	"gohub/pkg/jwt"
 	"gohub/pkg/response"
 
@@ -17,7 +16,7 @@ func GuestJWT() gin.HandlerFunc {
 			// 解析 token 成功，说明登录成功了
 			_, err := jwt.NewJWT().ParserToken(c)
 			if err == nil {
-				response.ErrorCustom(c, errorcode.AUTH_JWT_UNAUTHORIZED.Code, "请使用游客身份访问")
+				response.ErrorStr(c, "请使用游客身份访问")
 				c.Abort()
 				return
 			}

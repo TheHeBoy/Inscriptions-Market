@@ -3,13 +3,14 @@ package middlewares
 
 import (
 	"bytes"
+	"encoding/json"
 	"gohub/pkg/helpers"
 	"gohub/pkg/logger"
+	"gohub/pkg/response"
 	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/cast"
 )
 
 type responseBodyWriter struct {
@@ -20,6 +21,18 @@ type responseBodyWriter struct {
 func (r responseBodyWriter) Write(b []byte) (int, error) {
 	r.body.Write(b)
 	return r.ResponseWriter.Write(b)
+}
+
+type LogFields struct {
+	Code         int `json:"code,omitempty"`
+	Request      string
+	RequestBody  string
+	ResponseBody string
+	IP           string
+	Status       int
+	UserAgent    string
+	Errors       string
+	Time         string
 }
 
 // Logger 记录请求日志
@@ -45,33 +58,37 @@ func Logger() gin.HandlerFunc {
 
 		// 开始记录日志的逻辑
 		cost := time.Since(start)
-		responStatus := c.Writer.Status()
+		responseStatus := c.Writer.Status()
 
-		logFields := map[string]any{
-			"status":     responStatus,
-			"request":    c.Request.Method + " " + c.Request.URL.String(),
-			"query":      c.Request.URL.RawQuery,
-			"ip":         c.ClientIP(),
-			"user-agent": c.Request.UserAgent(),
-			"errors":     c.Errors.ByType(gin.ErrorTypePrivate).String(),
-			"time":       helpers.MicrosecondsStr(cost),
-		}
-		if c.Request.Method == "POST" || c.Request.Method == "PUT" || c.Request.Method == "DELETE" {
-			// 请求的内容
-			logFields["Request Body"] = string(requestBody)
-
-			// 响应的内容
-			logFields["Response Body"] = w.body.String()
+		// 响应的内容
+		responseBody := w.body.Bytes()
+		logFields := LogFields{
+			Status:       responseStatus,
+			Request:      c.Request.Method + " " + c.Request.URL.String(),
+			RequestBody:  string(requestBody),
+			ResponseBody: string(responseBody),
+			IP:           c.ClientIP(),
+			UserAgent:    c.Request.UserAgent(),
+			Errors:       c.Errors.ByType(gin.ErrorTypePrivate).String(),
+			Time:         helpers.MicrosecondsStr(cost),
 		}
 
-		if responStatus > 400 && responStatus <= 499 {
-			// 除了 StatusBadRequest 以外，warning 提示一下，常见的有 403 404，开发时都要注意
-			logger.Warn("HTTP Warning "+cast.ToString(responStatus), logFields)
-		} else if responStatus >= 500 && responStatus <= 599 {
-			// 除了内部错误，记录 error
-			logger.Error("HTTP Error "+cast.ToString(responStatus), logFields)
+		if responseStatus == 200 {
+			// 尝试将响应体转换为 CommonResult
+			var commonResult response.CommonResult
+			err := json.Unmarshal(w.body.Bytes(), &commonResult)
+			if err == nil {
+				logFields.Code = commonResult.Code
+				if commonResult.Code == 200 {
+					logger.Debug("HTTP Request:", logFields)
+				} else {
+					logger.Warn("HTTP Request:", logFields)
+				}
+			} else {
+				logger.Debug("HTTP Request:", logFields)
+			}
 		} else {
-			logger.Debug("HTTP Access Log", logFields)
+			logger.Warn("HTTP Request:", logFields)
 		}
 	}
 }

@@ -30,7 +30,7 @@ func LoginByPhone(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 
 	// 手机验证码
 	_data := data.(*LoginByPhoneRequest)
@@ -74,7 +74,7 @@ func LoginByPassword(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 
 	// 图片验证码
 	_data := data.(*LoginByPasswordRequest)

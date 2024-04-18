@@ -125,10 +125,7 @@ redis:
   host: 127.0.0.1
   port: 6379
   password: ""
-  # 业务类存储使用 1 (图片验证码、短信验证码、会话)
-  database: 1
-  # 缓存 cache 包使用 0 ，缓存清空理应当不影响业务
-  database_cache: 0
+  database: 0
 
 # 短信配置
 sms:

@@ -2,9 +2,7 @@ package middlewares
 
 import (
 	"gohub/pkg/app"
-	"gohub/pkg/errorcode"
 	"gohub/pkg/limiter"
-	"gohub/pkg/logger"
 	"gohub/pkg/response"
 	"net/http"
 
@@ -58,8 +56,7 @@ func limitHandler(c *gin.Context, key string, limit string) bool {
 	// 获取超额的情况
 	rate, err := limiter.CheckRate(c, key, limit)
 	if err != nil {
-		logger.Error(err)
-		response.Error(c, errorcode.BAD_REQUEST_LIMIT)
+		response.Error(c, err)
 		return false
 	}
 

@@ -27,19 +27,27 @@ var Redis *RedisClient
 // SetupRedis 初始化 Redis
 func SetupRedis() {
 	// 建立 Redis 连接
-	ConnectRedis(
+	err := ConnectRedis(
 		fmt.Sprintf("%v:%v", config.GetString("redis.host"), config.GetString("redis.port")),
 		config.GetString("redis.username"),
 		config.GetString("redis.password"),
 		config.GetInt("redis.database"),
 	)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // ConnectRedis 连接 redis 数据库，设置全局的 Redis 对象
-func ConnectRedis(address string, username string, password string, db int) {
+func ConnectRedis(address string, username string, password string, db int) error {
 	once.Do(func() {
 		Redis = NewClient(address, username, password, db)
 	})
+	err := Redis.Ping()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // NewClient 创建一个新的 redis 连接
@@ -57,10 +65,6 @@ func NewClient(address string, username string, password string, db int) *RedisC
 		Password: password,
 		DB:       db,
 	})
-
-	// 测试一下连接
-	err := rds.Ping()
-	logger.ErrorIf(err)
 
 	return rds
 }

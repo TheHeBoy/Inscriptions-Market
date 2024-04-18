@@ -2,7 +2,6 @@
 package response
 
 import (
-	"gohub/pkg/errorcode"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,18 +29,40 @@ func SuccessData(c *gin.Context, data any) {
 	})
 }
 
-func Error(c *gin.Context, errorCode errorcode.ErrorCode) {
+func Error(c *gin.Context, err error) {
 	c.JSON(http.StatusOK, CommonResult{
-		Code: errorCode.Code,
+		Code: 500,
 		Data: nil,
-		Msg:  errorCode.Msg,
+		Msg:  err.Error(),
 	})
 }
 
-func ErrorCustom(c *gin.Context, code int, msg string) {
+func ErrorStr(c *gin.Context, err string) {
+	c.JSON(http.StatusOK, CommonResult{
+		Code: 500,
+		Data: nil,
+		Msg:  err,
+	})
+}
+
+// Warn 400~499
+// Error 500~599
+// other debug
+
+// Error403 token 过期
+func Error403(c *gin.Context, err error) {
+	errorCode(c, 403, err)
+}
+
+// Error405 参数校验错误
+func Error405(c *gin.Context, err error) {
+	errorCode(c, 405, err)
+}
+
+func errorCode(c *gin.Context, code int, err error) {
 	c.JSON(http.StatusOK, CommonResult{
 		Code: code,
 		Data: nil,
-		Msg:  msg,
+		Msg:  err.Error(),
 	})
 }

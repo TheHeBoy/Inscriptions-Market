@@ -2,11 +2,10 @@
 package auth
 
 import (
-	v1 "gohub/app/http/controllers/api/v1"
 	"gohub/app/models/user"
 	"gohub/app/requests"
-	"gohub/pkg/errorcode"
 	"gohub/pkg/jwt"
+	"gohub/pkg/logger"
 	"gohub/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +13,6 @@ import (
 
 // SignupController 注册控制器
 type SignupController struct {
-	v1.BaseAPIController
 }
 
 // IsPhoneExist 检测手机号是否被注册
@@ -60,13 +58,15 @@ func (sc *SignupController) SignupUsingPhone(c *gin.Context) {
 	userModel.Create()
 
 	if userModel.ID > 0 {
-		token := jwt.NewJWT().IssueToken(userModel.GetStringID(), userModel.Name)
-		response.SuccessData(c, gin.H{
-			"token": token,
-			"data":  userModel,
-		})
+		tokens, err := jwt.NewJWT().IssueToken(userModel.GetStringID())
+		if err != nil {
+			logger.Error(err)
+			response.Error(c, err)
+		} else {
+			response.SuccessData(c, tokens)
+		}
 	} else {
-		response.Error(c, errorcode.USER_CREATE_FAIL)
+		response.ErrorStr(c, "用户创建失败")
 	}
 }
 
@@ -88,12 +88,14 @@ func (sc *SignupController) SignupUsingEmail(c *gin.Context) {
 	userModel.Create()
 
 	if userModel.ID > 0 {
-		token := jwt.NewJWT().IssueToken(userModel.GetStringID(), userModel.Name)
-		response.SuccessData(c, gin.H{
-			"token": token,
-			"data":  userModel,
-		})
+		tokens, err := jwt.NewJWT().IssueToken(userModel.GetStringID())
+		if err != nil {
+			logger.Error(err)
+			response.Error(c, err)
+		} else {
+			response.SuccessData(c, tokens)
+		}
 	} else {
-		response.Error(c, errorcode.USER_CREATE_FAIL)
+		response.ErrorStr(c, "用户创建失败")
 	}
 }

@@ -1,10 +1,8 @@
 package auth
 
 import (
-	v1 "gohub/app/http/controllers/api/v1"
 	"gohub/app/requests"
 	"gohub/pkg/captcha"
-	"gohub/pkg/errorcode"
 	"gohub/pkg/logger"
 	"gohub/pkg/response"
 	"gohub/pkg/verifycode"
@@ -14,7 +12,6 @@ import (
 
 // VerifyCodeController 用户控制器
 type VerifyCodeController struct {
-	v1.BaseAPIController
 }
 
 // ShowCaptcha 显示图片验证码
@@ -41,7 +38,7 @@ func (vc *VerifyCodeController) SendUsingPhone(c *gin.Context) {
 
 	// 2. 发送 SMS
 	if ok := verifycode.NewVerifyCode().SendSMS(request.Phone); !ok {
-		response.Error(c, errorcode.SMS_SEND_VERIFYCODE_FAIL)
+		response.ErrorStr(c, "发送短信验证码失败")
 	} else {
 		response.Success(c)
 	}
@@ -59,7 +56,7 @@ func (vc *VerifyCodeController) SendUsingEmail(c *gin.Context) {
 	// 2. 发送邮件
 	err := verifycode.NewVerifyCode().SendEmail(request.Email)
 	if err != nil {
-		response.Error(c, errorcode.Email_SEND_VERIFYCODE_FAIL)
+		response.ErrorStr(c, "发送邮件验证码失败")
 	} else {
 		response.Success(c)
 	}

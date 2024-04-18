@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/thedevsaddam/govalidator"
-	"gohub/pkg/errorcode"
-	"gohub/pkg/logger"
 	"gohub/pkg/response"
 )
 
@@ -23,8 +22,8 @@ func Validate(c *gin.Context, obj interface{}, handler ValidatorFunc) bool {
 
 	// 1. 解析请求，支持 JSON 数据、表单请求和 URL Query
 	if err := c.ShouldBind(obj); err != nil {
-		logger.Error(err)
-		response.ErrorCustom(c, errorcode.BAD_REQUEST.Code, "请求解析错误，请确认请求格式是否正确。上传文件请使用 multipart 标头，参数请使用 JSON 格式。")
+		response.Error405(c,
+			errors.Wrap(err, "请求解析错误，请确认请求格式是否正确。参数请使用 JSON 格式。"))
 		return false
 	}
 
@@ -33,21 +32,20 @@ func Validate(c *gin.Context, obj interface{}, handler ValidatorFunc) bool {
 
 	jsonData, err := json.Marshal(errs)
 	if err != nil {
-		logger.Error(err)
-		response.Error(c, errorcode.JSON_FORMAT_ERROR)
+		response.Error(c, err)
 		return false
 	}
 
 	// 3. 判断验证是否通过
 	if len(errs) > 0 {
-		response.ErrorCustom(c, errorcode.BAD_REQUEST.Code, fmt.Sprintf("请求参数不正确:%s", jsonData))
+		response.Error405(c, errors.New(fmt.Sprintf("参数校验错误: %s", string(jsonData))))
 		return false
 	}
 
 	return true
 }
 
-func validate(data interface{}, rules govalidator.MapData, messages govalidator.MapData) map[string][]string {
+func ValidateData(data interface{}, rules govalidator.MapData, messages govalidator.MapData) map[string][]string {
 	// 配置选项
 	opts := govalidator.Options{
 		Data:          data,

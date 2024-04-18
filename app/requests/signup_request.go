@@ -24,7 +24,7 @@ func SignupPhoneExist(data interface{}, c *gin.Context) map[string][]string {
 			"digits:手机号长度必须为 11 位的数字",
 		},
 	}
-	return validate(data, rules, messages)
+	return ValidateData(data, rules, messages)
 }
 
 type SignupEmailExistRequest struct {
@@ -45,7 +45,7 @@ func SignupEmailExist(data interface{}, c *gin.Context) map[string][]string {
 			"email:Email 格式不正确，请提供有效的邮箱地址",
 		},
 	}
-	return validate(data, rules, messages)
+	return ValidateData(data, rules, messages)
 }
 
 // SignupUsingPhoneRequest 通过手机注册的请求信息
@@ -90,7 +90,7 @@ func SignupUsingPhone(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 
 	_data := data.(*SignupUsingPhoneRequest)
 	errs = validators.ValidatePasswordConfirm(_data.Password, _data.PasswordConfirm, errs)
@@ -144,7 +144,7 @@ func SignupUsingEmail(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	errs := validate(data, rules, messages)
+	errs := ValidateData(data, rules, messages)
 
 	_data := data.(*SignupUsingEmailRequest)
 	errs = validators.ValidatePasswordConfirm(_data.Password, _data.PasswordConfirm, errs)

@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"gohub/pkg/errorcode"
 	"gohub/pkg/logger"
 	"gohub/pkg/response"
 	"net"
@@ -36,10 +35,10 @@ func Recovery() gin.HandlerFunc {
 				}
 				// 链接中断的情况
 				if brokenPipe {
-					logger.Error(c.Request.URL.Path,
-						zap.Time("time", time.Now()),
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
+					logger.Errorw(c.Request.URL.Path,
+						"time", time.Now(), // 记录时间
+						"error", err, // 记录错误信息
+						"request", string(httpRequest), // 请求信息
 					)
 					c.Error(err.(error))
 					c.Abort()
@@ -48,14 +47,14 @@ func Recovery() gin.HandlerFunc {
 				}
 
 				// 如果不是链接中断，就开始记录堆栈信息
-				logger.Error("recovery from panic",
-					zap.Time("time", time.Now()),               // 记录时间
-					zap.Any("error", err),                      // 记录错误信息
-					zap.String("request", string(httpRequest)), // 请求信息
-					zap.Stack("stacktrace"),                    // 调用堆栈信息
+				logger.Errorw("recovery from panic",
+					"time", time.Now(), // 记录时间
+					"error", err, // 记录错误信息
+					"request", string(httpRequest), // 请求信息
+					"stacktrace", zap.Stack("stacktrace"), // 调用堆栈信息
 				)
 
-				response.Error(c, errorcode.SERVICE_INTERNAL_ERROR)
+				response.ErrorStr(c, "服务器内部错误")
 			}
 		}()
 		c.Next()
