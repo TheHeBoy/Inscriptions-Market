@@ -3,7 +3,7 @@ package factories
 
 import (
 	"gohub/app/models/user"
-	"gohub/pkg/helpers"
+	"gohub/pkg/utils/helpers"
 
 	"github.com/bxcodec/faker/v3"
 )

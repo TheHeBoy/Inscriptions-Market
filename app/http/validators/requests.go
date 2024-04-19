@@ -1,5 +1,5 @@
 // Package requests 处理请求数据和表单验证
-package requests
+package validators
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 )
 
 // ValidatorFunc 验证函数类型
-type ValidatorFunc func(interface{}, *gin.Context) map[string][]string
+type ValidatorFunc func(interface{}) map[string][]string
 
 // Validate 控制器里调用示例：
 //
@@ -28,7 +28,7 @@ func Validate(c *gin.Context, obj interface{}, handler ValidatorFunc) bool {
 	}
 
 	// 2. 表单验证
-	errs := handler(obj, c)
+	errs := handler(obj)
 
 	jsonData, err := json.Marshal(errs)
 	if err != nil {

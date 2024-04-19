@@ -3,8 +3,8 @@ package limiter
 
 import (
 	"gohub/pkg/config"
+	"gohub/pkg/dal/redis"
 	"gohub/pkg/logger"
-	"gohub/pkg/redis"
 	"strings"
 
 	"github.com/gin-gonic/gin"

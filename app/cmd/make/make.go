@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"gohub/pkg/console"
 	"gohub/pkg/file"
-	"gohub/pkg/str"
+	"gohub/pkg/utils/str"
 	"strings"
 
 	"github.com/iancoleman/strcase"

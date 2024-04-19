@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"gohub/app/cmd"
 	"gohub/app/cmd/make"
-	"gohub/pkg/cache"
 	"gohub/pkg/config"
 	"gohub/pkg/console"
-	"gohub/pkg/database"
+	"gohub/pkg/dal/database"
+	"gohub/pkg/dal/redis"
 	"gohub/pkg/eth"
 	"gohub/pkg/logger"
-	"gohub/pkg/redis"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -39,9 +38,6 @@ func main() {
 			// 初始化 Redis
 			redis.SetupRedis()
 
-			// 初始化缓存
-			cache.SetupCache()
-
 			// 初始化以太坊客户端
 			eth.SetupEth()
 		},
@@ -55,7 +51,6 @@ func main() {
 		make.CmdMake,
 		cmd.CmdMigrate,
 		cmd.CmdDBSeed,
-		cmd.CmdCache,
 	)
 
 	// 配置默认运行 Web 服务

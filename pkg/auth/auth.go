@@ -40,7 +40,7 @@ func CurrentUser(c *gin.Context) user.User {
 		logger.Error(errors.New("无法获取用户"))
 		return user.User{}
 	}
-	// db is now a *DB value
+	// dal is now a *DB value
 	return userModel
 }
 

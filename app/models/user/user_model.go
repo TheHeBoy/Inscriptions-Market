@@ -3,8 +3,8 @@ package user
 
 import (
 	"gohub/app/models"
-	"gohub/pkg/database"
-	"gohub/pkg/hash"
+	"gohub/pkg/dal/database"
+	"gohub/pkg/utils/hash"
 )
 
 // User 用户模型

@@ -1,15 +1,15 @@
-package auth
+package login_controller
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"gohub/app/requests"
+	"gohub/app/http/validators"
+	"gohub/pkg/dal/redis"
 	"gohub/pkg/eth"
 	"gohub/pkg/jwt"
 	"gohub/pkg/logger"
-	"gohub/pkg/redis"
 	"gohub/pkg/response"
 )
 
@@ -20,7 +20,7 @@ type LoginController struct {
 func (lc *LoginController) GetMessage(c *gin.Context) {
 	// 1. 验证表单
 	request := GetMessageReq{}
-	if ok := requests.Validate(c, &request, GetMessageVal); !ok {
+	if ok := validators.Validate(c, &request, GetMessageVal); !ok {
 		return
 	}
 	address := request.Address
@@ -50,7 +50,7 @@ func (lc *LoginController) GetMessage(c *gin.Context) {
 func (lc *LoginController) LoginBySignature(c *gin.Context) {
 	// 1. 验证表单
 	request := LoginBySignatureReq{}
-	if ok := requests.Validate(c, &request, LoginBySignatureVal); !ok {
+	if ok := validators.Validate(c, &request, LoginBySignatureVal); !ok {
 		return
 	}
 	// 2. 验证 nonce

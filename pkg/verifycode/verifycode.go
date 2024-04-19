@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"gohub/pkg/app"
 	"gohub/pkg/config"
-	"gohub/pkg/helpers"
+	"gohub/pkg/dal/redis"
 	"gohub/pkg/logger"
 	"gohub/pkg/mail"
-	"gohub/pkg/redis"
 	"gohub/pkg/sms"
+	"gohub/pkg/utils/helpers"
 	"strings"
 	"sync"
 )

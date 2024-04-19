@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"gohub/pkg/app"
 	"gohub/pkg/auth"
-	"gohub/pkg/helpers"
+	"gohub/pkg/utils/helpers"
 	"mime/multipart"
 	"os"
 	"path/filepath"

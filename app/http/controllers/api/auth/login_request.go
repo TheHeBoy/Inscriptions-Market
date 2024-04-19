@@ -1,16 +1,15 @@
-package auth
+package login_controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/thedevsaddam/govalidator"
-	"gohub/app/requests"
+	"gohub/app/http/validators"
 )
 
 type GetMessageReq struct {
 	Address string `json:"address" valid:"address" form:"address"` // 账户地址
 }
 
-func GetMessageVal(data interface{}, c *gin.Context) map[string][]string {
+func GetMessageVal(data interface{}) map[string][]string {
 	rules := govalidator.MapData{
 		"address": []string{"required"},
 	}
@@ -20,7 +19,7 @@ func GetMessageVal(data interface{}, c *gin.Context) map[string][]string {
 			"required:账户地址为必填项",
 		},
 	}
-	return requests.ValidateData(data, rules, messages)
+	return validators.ValidateData(data, rules, messages)
 }
 
 type LoginBySignatureReq struct {
@@ -28,7 +27,7 @@ type LoginBySignatureReq struct {
 	Signature string `json:"signature" valid:"signature"` // 签名
 }
 
-func LoginBySignatureVal(data interface{}, c *gin.Context) map[string][]string {
+func LoginBySignatureVal(data interface{}) map[string][]string {
 
 	rules := govalidator.MapData{
 		"address":   []string{"required"},
@@ -44,5 +43,5 @@ func LoginBySignatureVal(data interface{}, c *gin.Context) map[string][]string {
 		},
 	}
 
-	return requests.ValidateData(data, rules, messages)
+	return validators.ValidateData(data, rules, messages)
 }

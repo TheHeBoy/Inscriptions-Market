@@ -3,7 +3,7 @@ package config
 
 import (
 	"fmt"
-	"gohub/pkg/helpers"
+	"gohub/pkg/utils/helpers"
 	"os"
 
 	"github.com/spf13/cast"

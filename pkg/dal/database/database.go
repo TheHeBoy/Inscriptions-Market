@@ -5,14 +5,15 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"gohub/app/models/token"
 	"gohub/pkg/config"
 	"gohub/pkg/logger"
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
+	"gorm.io/plugin/dbresolver"
+	"moul.io/zapgorm2"
 	"time"
 
 	"gorm.io/gorm"
-	gormlogger "gorm.io/gorm/logger"
 )
 
 // DB 对象
@@ -25,48 +26,54 @@ func SetupDB() {
 	var dbConfig gorm.Dialector
 	switch config.Get("database.connection") {
 	case "mysql":
-		// 构建 DSN 信息
-		dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&parseTime=True&multiStatements=true&loc=Local",
-			config.Get("database.mysql.username"),
-			config.Get("database.mysql.password"),
-			config.Get("database.mysql.host"),
-			config.Get("database.mysql.port"),
-			config.Get("database.mysql.database"),
-			config.Get("database.mysql.charset"),
-		)
+		masterDb := config.GetStringMapString("database.mysql.master")
 		dbConfig = mysql.New(mysql.Config{
-			DSN: dsn,
+			DSN: createDsn(masterDb),
 		})
-	case "sqlite":
-		// 初始化 sqlite
-		database := config.Get("database.sqlite.database")
-		dbConfig = sqlite.Open(database)
 	default:
 		panic(errors.New("database connection not supported"))
 	}
 
-	// 连接数据库，并设置 GORM 的日志模式
-	err := Connect(dbConfig, logger.NewGormLogger())
+	// 连接数据库
+	err := Connect(dbConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	// 设置最大连接数
-	SQLDB.SetMaxOpenConns(config.GetInt("database.mysql.max_open_connections"))
-	// 设置最大空闲连接数
-	SQLDB.SetMaxIdleConns(config.GetInt("database.mysql.max_idle_connections"))
-	// 设置每个链接的过期时间
-	SQLDB.SetConnMaxLifetime(time.Duration(config.GetInt("database.mysql.max_life_seconds")) * time.Second)
+	maxOpenConns := config.GetInt("database.mysql.max_open_connections")
+	maxIdleConns := config.GetInt("database.mysql.max_idle_connections")
+	maxLifeSeconds := config.GetInt("database.mysql.max_life_seconds")
+
+	SQLDB.SetMaxOpenConns(maxOpenConns)
+	SQLDB.SetMaxIdleConns(maxIdleConns)
+	SQLDB.SetConnMaxLifetime(time.Duration(maxLifeSeconds) * time.Second)
+
+	// 添加 indexer 数据源
+	indexerDb := config.GetStringMapString("database.mysql.indexer")
+	err = DB.Use(
+		dbresolver.Register(
+			dbresolver.Config{Sources: []gorm.Dialector{mysql.Open(createDsn(indexerDb))}}, &token.Token{}, "indexer").
+			SetConnMaxLifetime(time.Duration(maxLifeSeconds) * time.Second).
+			SetMaxIdleConns(maxIdleConns).
+			SetMaxOpenConns(maxOpenConns),
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
 }
 
 // Connect 连接数据库
-func Connect(dbConfig gorm.Dialector, _logger gormlogger.Interface) error {
+func Connect(dbConfig gorm.Dialector) error {
+
+	log := zapgorm2.New(logger.LogZap)
+	log.SetAsDefault()
 
 	// 使用 gorm.Open 连接数据库
 	var err error
-	DB, err = gorm.Open(dbConfig, &gorm.Config{
-		Logger: _logger,
-	})
+	DB, err = gorm.Open(dbConfig, &gorm.Config{Logger: log})
+
 	// 处理错误
 	if err != nil {
 		return err
@@ -79,6 +86,7 @@ func Connect(dbConfig gorm.Dialector, _logger gormlogger.Interface) error {
 	}
 	return nil
 }
+
 func CurrentDatabase() (dbname string) {
 	dbname = DB.Migrator().CurrentDatabase()
 	return
@@ -153,4 +161,14 @@ func TableName(obj interface{}) string {
 	stmt := &gorm.Statement{DB: DB}
 	stmt.Parse(obj)
 	return stmt.Schema.Table
+}
+
+func createDsn(data map[string]string) string {
+	return fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=%v&parseTime=True&multiStatements=true&loc=Local",
+		data["username"],
+		data["password"],
+		data["host"],
+		data["port"],
+		data["database"],
+		data["charset"])
 }

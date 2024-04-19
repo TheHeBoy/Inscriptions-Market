@@ -4,6 +4,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"gohub/app/http/controllers/api/auth"
+	token_controller "gohub/app/http/controllers/api/token"
 	"gohub/app/http/middlewares"
 )
 
@@ -21,10 +22,14 @@ func RegisterAPIRoutes(r *gin.Engine) {
 
 func apiRoutes(r *gin.RouterGroup) {
 	authGroup := r.Group("/auth")
-	lgc := new(auth.LoginController)
+	lgc := new(login_controller.LoginController)
 	authGroup.GET("/message", middlewares.GuestJWT(), lgc.GetMessage)
 	authGroup.POST("/login", middlewares.GuestJWT(), lgc.LoginBySignature)
 	authGroup.POST("/refresh-token", lgc.RefreshToken)
+
+	tokenGroup := r.Group("/tokens")
+	tcl := new(token_controller.TokenController)
+	tokenGroup.GET("/page", tcl.PageTokens)
 }
 
 func adminRoutes(r *gin.RouterGroup) {

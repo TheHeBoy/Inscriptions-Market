@@ -3,7 +3,7 @@ package migrate
 
 import (
 	"gohub/pkg/console"
-	"gohub/pkg/database"
+	"gohub/pkg/dal/database"
 	"gohub/pkg/file"
 	"os"
 

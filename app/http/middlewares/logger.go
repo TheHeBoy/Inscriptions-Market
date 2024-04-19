@@ -4,9 +4,9 @@ package middlewares
 import (
 	"bytes"
 	"encoding/json"
-	"gohub/pkg/helpers"
 	"gohub/pkg/logger"
 	"gohub/pkg/response"
+	"gohub/pkg/utils/helpers"
 	"io"
 	"time"
 

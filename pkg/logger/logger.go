@@ -53,7 +53,12 @@ func InitLogger(filename string, maxSize, maxBackup, maxAge int, compress bool, 
 	)
 	Logger = LogZap.Sugar()
 
-	defer Logger.Sync()
+	defer func(Logger *zap.SugaredLogger) {
+		err := Logger.Sync()
+		if err != nil {
+			panic(err)
+		}
+	}(Logger)
 }
 
 // getEncoder 设置日志存储格式
@@ -64,7 +69,7 @@ func getEncoder() zapcore.Encoder {
 		TimeKey:        "time",
 		LevelKey:       "level",
 		NameKey:        "logger",
-		CallerKey:      "caller", // 代码调用，如 paginator/paginator.go:148
+		CallerKey:      "caller", // 代码调用，如 page/page.go:148
 		FunctionKey:    zapcore.OmitKey,
 		MessageKey:     "message",
 		StacktraceKey:  "stacktrace",

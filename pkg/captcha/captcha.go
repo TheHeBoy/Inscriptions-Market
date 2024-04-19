@@ -4,7 +4,7 @@ package captcha
 import (
 	"gohub/pkg/app"
 	"gohub/pkg/config"
-	"gohub/pkg/redis"
+	"gohub/pkg/dal/redis"
 	"sync"
 
 	"github.com/mojocn/base64Captcha"
