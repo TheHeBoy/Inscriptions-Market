@@ -37,10 +37,9 @@ func InitLogger(filename string, maxSize, maxBackup, maxAge int, compress bool, 
 	// 获取日志写入介质
 	writeSyncer := getLogWriter(filename, maxSize, maxBackup, maxAge, compress, logType)
 
-	// 设置日志等级，具体请见 config/log.go 文件
 	logLevel := new(zapcore.Level)
 	if err := logLevel.UnmarshalText([]byte(level)); err != nil {
-		fmt.Println("日志初始化错误，日志级别设置有误。请修改 config/log.go 文件中的 log.level 配置项")
+		panic(err)
 	}
 
 	// 初始化 core
@@ -53,12 +52,7 @@ func InitLogger(filename string, maxSize, maxBackup, maxAge int, compress bool, 
 	)
 	Logger = LogZap.Sugar()
 
-	defer func(Logger *zap.SugaredLogger) {
-		err := Logger.Sync()
-		if err != nil {
-			panic(err)
-		}
-	}(Logger)
+	defer Logger.Sync()
 }
 
 // getEncoder 设置日志存储格式
@@ -106,7 +100,7 @@ func getLogWriter(filename string, maxSize, maxBackup, maxAge int, compress bool
 		filename = strings.ReplaceAll(filename, "logs.log", logname)
 	}
 
-	// 滚动日志，详见 config/log.go
+	// 滚动日志，详见 config
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   filename,
 		MaxSize:    maxSize,
@@ -142,6 +136,10 @@ func Warn(args ...any) {
 // Error is a package-level function that calls the Error method on the Logger
 func Error(args ...any) {
 	Logger.Error(args)
+}
+
+func Errorv(err error) {
+	Logger.Error(fmt.Printf("%+v", err))
 }
 
 func ErrorIf(err error) {

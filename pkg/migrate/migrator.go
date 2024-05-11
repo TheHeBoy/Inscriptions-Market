@@ -3,7 +3,7 @@ package migrate
 
 import (
 	"gohub/pkg/console"
-	"gohub/pkg/dal/database"
+	"gohub/pkg/database"
 	"gohub/pkg/file"
 	"os"
 
@@ -29,7 +29,7 @@ func NewMigrator() *Migrator {
 
 	// 初始化必要属性
 	migrator := &Migrator{
-		Folder:   "database/migrations/",
+		Folder:   "tools/migrations/",
 		DB:       database.DB,
 		Migrator: database.DB.Migrator(),
 	}
@@ -144,7 +144,7 @@ func (migrator *Migrator) getBatch() int {
 // 从文件目录读取文件，保证正确的时间排序
 func (migrator *Migrator) readAllMigrationFiles() []MigrationFile {
 
-	// 读取 database/migrations/ 目录下的所有文件
+	// 读取 tools/migrations/ 目录下的所有文件
 	// 默认是会按照文件名称进行排序
 	files, err := os.ReadDir(migrator.Folder)
 	console.ExitIf(err)

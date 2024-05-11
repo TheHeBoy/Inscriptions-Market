@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"gohub/app/cmd"
-	"gohub/app/cmd/make"
+	"gohub/cmd"
+	"gohub/cmd/make"
+	"gohub/internal/mqI"
 	"gohub/pkg/config"
 	"gohub/pkg/console"
-	"gohub/pkg/dal/database"
-	"gohub/pkg/dal/redis"
+	"gohub/pkg/database"
 	"gohub/pkg/eth"
 	"gohub/pkg/logger"
 	"os"
@@ -35,11 +35,11 @@ func main() {
 			// 初始化数据库
 			database.SetupDB()
 
-			// 初始化 Redis
-			redis.SetupRedis()
-
 			// 初始化以太坊客户端
 			eth.SetupEth()
+
+			// 初始化消息队列
+			mqI.InitMQ()
 		},
 	}
 

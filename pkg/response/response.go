@@ -17,7 +17,7 @@ func Success(c *gin.Context) {
 	c.JSON(http.StatusOK, CommonResult{
 		Code: 200,
 		Data: nil,
-		Msg:  "",
+		Msg:  "success",
 	})
 }
 
@@ -25,7 +25,7 @@ func SuccessData(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, CommonResult{
 		Code: 200,
 		Data: data,
-		Msg:  "",
+		Msg:  "success",
 	})
 }
 

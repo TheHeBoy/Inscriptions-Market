@@ -3,7 +3,6 @@ package config
 
 import (
 	"fmt"
-	"gohub/pkg/utils/helpers"
 	"os"
 
 	"github.com/spf13/cast"
@@ -40,18 +39,23 @@ func init() {
 func InitConfig(env string) {
 	loadEnv(env)
 }
+
 func loadEnv(envSuffix string) {
-	envPath := formatEnvStr(Get("app.env"))
+	var envPath string
+	// 优先级：参数 > 配置文件 > 默认值
 	if len(envSuffix) > 0 {
 		filepath := formatEnvStr(envSuffix)
 		if _, err := os.Stat(filepath); err == nil {
-			// 如 .env.testing 或 .env.stage
 			envPath = filepath
 		}
+	} else if len(Get("app.env")) > 0 {
+		envPath = formatEnvStr(Get("app.env"))
 	}
 
-	// 加载 env
-	viper.SetConfigName(envPath)
+	if len(envPath) > 0 {
+		viper.SetConfigName(envPath)
+	}
+
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}
@@ -73,7 +77,7 @@ func Get(path string, defaultValue ...interface{}) string {
 
 func internalGet(path string, defaultValue ...interface{}) interface{} {
 	// config 或者环境变量不存在的情况
-	if !viper.IsSet(path) || helpers.Empty(viper.Get(path)) {
+	if !viper.IsSet(path) {
 		if len(defaultValue) > 0 {
 			return defaultValue[0]
 		}

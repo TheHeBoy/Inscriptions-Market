@@ -3,7 +3,7 @@ package seed
 
 import (
 	"gohub/pkg/console"
-	"gohub/pkg/dal/database"
+	"gohub/pkg/database"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +17,7 @@ var orderedSeederNames []string
 
 type SeederFunc func(*gorm.DB)
 
-// Seeder 对应每一个 database/seeders 目录下的 Seeder 文件
+// Seeder 对应每一个 tools/seeders 目录下的 Seeder 文件
 type Seeder struct {
 	Func SeederFunc
 	Name string

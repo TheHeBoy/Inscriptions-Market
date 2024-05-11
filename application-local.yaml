@@ -1,0 +1,47 @@
+database:
+  connection: mysql
+  mysql:
+    master:
+      host: 127.0.0.1
+      port: 3306
+      database: gohub
+      username: root
+      password: 123456
+      charset: utf8mb4
+    indexer:
+      host: 127.0.0.1
+      port: 3306
+      database: indexer
+      username: root
+      password: 123456
+      charset: utf8mb4
+mail:
+  smtp:
+    host: localhost
+    port: 1025
+    username:
+    password:
+
+  from:
+    address: gohub@example.com
+    name: Gohub
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password:
+
+
+file_base_path: storage/static/ # 文件存储路径
+
+# 智能合约配置
+eth:
+  contract_address: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512 # 合约地址
+  private_Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80  # 私钥
+  rpc_url: http://127.0.0.1:8545 # rpc地址
+  ws_rpc_url: ws://127.0.0.1:8545 # rpc ws 地址
+  start_block: 1 # 合约部署块高度
+  confirm_block: 0 # 确认块高度
+
+mq:
+  url: amqp://root:123456@localhost:5672/

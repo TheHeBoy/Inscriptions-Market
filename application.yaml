@@ -10,29 +10,8 @@ app:
   port: "3000"
   # JWT 加密密钥
   key: 33446a9dcf9ea060a0a6532b166da32f304af0de
-  # 用以生成链接
-  url: http://localhost:3000
   # 设置时区，JWT 里会使用，日志记录里也会使用到
   timezone: Asia/Shanghai
-
-# Captcha 验证码配置
-captcha:
-  # 验证码图片高度
-  height: 80
-  # 验证码图片宽度
-  width: 240
-  # 验证码的长度
-  length: 6
-  # 数字的最大倾斜角度
-  maxskew: 0.7
-  # 图片背景里的混淆点数量
-  dotcount: 80
-  # 过期时间，单位是分钟
-  expire_time: 15
-  # debug 模式下的过期时间，方便本地开发调试
-  debug_expire_time: 10080
-  # 非 production 环境，使用此 key 可跳过验证，方便测试
-  testing_key: captcha_skip_test
 
 # 数据库配置
 database:
@@ -94,19 +73,6 @@ log:
   # 是否压缩，压缩日志不方便查看，我们设置为 false（压缩可节省空间）
   compress: false
 
-# 邮件配置
-mail:
-  # 默认是 Mailhog 的配置
-  smtp:
-    host: localhost
-    port: 1025
-    username:
-    password:
-
-  from:
-    address: gohub@example.com
-    name: Gohub
-
 # 分页配置
 page:
   # 默认每页条数
@@ -120,29 +86,6 @@ redis:
   port: 6379
   password: ""
   database: 0
-
-# 短信配置
-sms:
-  # 默认是阿里云的测试 sign_name 和 template_code
-  aliyun:
-    access_key_id:
-    access_key_secret:
-    sign_name: 阿里云短信测试
-    template_code: SMS_154950909
-
-# 验证码配置
-verifycode:
-  # 验证码的长度
-  code_length: 6
-  # 过期时间，单位是分钟
-  expire_time: 15
-  # debug 模式下的过期时间，方便本地开发调试
-  debug_expire_time: 10080
-  # 本地开发环境验证码使用 debug_code, 使用固定验证码
-  debug_code: 123456
-  # 方便本地和 API 自动测试，直接返回 true
-  debug_phone_prefix: "000"
-  debug_email_suffix: "@testing.com"
 
 
 
