@@ -26,6 +26,7 @@ require (
 	gorm.io/gorm v1.25.9
 	gorm.io/plugin/dbresolver v1.5.1
 	moul.io/zapgorm2 v1.3.0
+	github.com/shopspring/decimal v1.4.0
 )
 
 require (

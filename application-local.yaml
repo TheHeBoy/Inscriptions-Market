@@ -36,7 +36,7 @@ file_base_path: storage/static/ # 文件存储路径
 
 # 智能合约配置
 eth:
-  contract_address: 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512 # 合约地址
+  contract_address: 0xbCFB2b3aeEca7a535acd82a18BFa1a3013F09df5 # 合约地址
   private_Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80  # 私钥
   rpc_url: http://127.0.0.1:8545 # rpc地址
   ws_rpc_url: ws://127.0.0.1:8545 # rpc ws 地址

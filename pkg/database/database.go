@@ -56,11 +56,14 @@ func SetupDB() {
 			SetMaxIdleConns(maxIdleConns).
 			SetMaxOpenConns(maxOpenConns),
 	)
-
 	if err != nil {
 		panic(err)
 	}
 
+	err = DB.Migrator().AutoMigrate(&model.OrderDO{}, &model.OrderLogDO{})
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Connect 连接数据库

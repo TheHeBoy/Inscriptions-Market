@@ -8,7 +8,7 @@ type TokenDO struct {
 	Limit       uint64 `gorm:"column:limit" json:"limit"`
 	Minted      uint64 `gorm:"column:minted" json:"minted"`
 	Progress    string `gorm:"column:progress" json:"progress"`
-	Txs         uint32 `gorm:"column:trxs" json:"txs"`
+	Txs         uint32 `gorm:"column:txs" json:"txs"`
 	CompletedAt uint64 `gorm:"column:completed_at" json:"completedAt"`
 	DeployAt    uint64 `gorm:"column:deploy_at;index" json:"deployAt"`
 }

@@ -24,3 +24,9 @@ type OrderLogDao struct {
 }
 
 var OrderLog = new(OrderLogDao)
+
+type ListDao struct {
+	BaseDao[model.ListDO]
+}
+
+var List = new(ListDao)

@@ -1,5 +1,9 @@
 package model
 
+import (
+	"gohub/pkg/bigint"
+)
+
 type OrderDO struct {
 	BaseModel
 
@@ -12,12 +16,12 @@ type OrderDO struct {
 
 // SignOrder 签名的数据结构
 type SignOrder struct {
-	Seller         string `gorm:"column:seller" json:"seller"`
-	ListHash       string `gorm:"column:list_hash;unique" json:"listHash"`
-	Tick           string `gorm:"column:tick;" json:"tick"`
-	Amount         uint64 `gorm:"column:amount" json:"amount"`
-	Price          int    `gorm:"column:price" json:"price"`
-	CreatorFeeRate int    `gorm:"column:creator_fee_rate" json:"creatorFeeRate"`
+	Seller         string        `gorm:"column:seller" json:"seller"`
+	ListHash       string        `gorm:"column:list_hash;unique" json:"listHash"`
+	Tick           string        `gorm:"column:tick;" json:"tick"`
+	Amount         uint64        `gorm:"column:amount" json:"amount"`
+	Price          bigint.BigInt `gorm:"column:price" json:"price"`
+	CreatorFeeRate int           `gorm:"column:creator_fee_rate" json:"creatorFeeRate"`
 }
 
 func (*OrderDO) TableName() string {
@@ -41,4 +45,18 @@ type OrderLogDO struct {
 
 func (*OrderLogDO) TableName() string {
 	return "order_log"
+}
+
+type ListDO struct {
+	BaseModel
+
+	Hash     string `gorm:"column:hash" json:"hash"`
+	Owner    string `gorm:"column:owner" json:"owner"`
+	Exchange string `gorm:"column:exchange" json:"exchange"`
+	Tick     string `gorm:"column:tick" json:"tick"`
+	Amount   uint64 `gorm:"column:amount" json:"amount"`
+}
+
+func (*ListDO) TableName() string {
+	return "lists"
 }

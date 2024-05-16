@@ -5,8 +5,8 @@ import (
 	"gohub/internal/dao"
 	"gohub/internal/enum"
 	"gohub/internal/model"
-	"gohub/internal/request"
 	"gohub/internal/request/api"
+	"gohub/pkg/bigint"
 	"gohub/pkg/logger"
 )
 
@@ -15,18 +15,17 @@ type OrderService struct {
 
 var Order = new(OrderService)
 var orderDao = dao.Order
+var listDao = dao.List
 
-func (*OrderService) Create(req api.CreateOrderReq) error {
+func (s *OrderService) Create(req api.CreateOrderReq) error {
 	orderDO := orderDao.ExistByListHash(req.ListHash)
 	// 已经发送了 list 铭文到合约里, 但是还没有签名
-	if orderDO != nil && orderDO.Status == enum.OrderStatusWaitSignEnum.Code && orderDO.Tick == req.Tick &&
-		orderDO.Seller == req.Seller && orderDO.Amount == req.Amount {
-		// 添加价格和手续费
-		orderDO.Price = req.Price
-		orderDO.CreatorFeeRate = req.CreatorFeeRate
-		orderDO.Signature = req.Signature
-		orderDao.Model().Where("list_hash = ?", req.ListHash).Save(orderDO)
-		return nil
+	if orderDO != nil {
+		if orderDO.Tick == req.Tick &&
+			orderDO.Seller == req.Seller && orderDO.Amount == req.Amount {
+			return errors.New("order info is error")
+		}
+		return s.sign(orderDO, req.Price, req.CreatorFeeRate, req.Signature)
 	}
 
 	// 创建订单
@@ -50,12 +49,38 @@ func (*OrderService) Create(req api.CreateOrderReq) error {
 	return nil
 }
 
-func (*OrderService) PageListingOrder(req api.PageListingOrderReq) (*request.PageResp[model.OrderDO], error) {
+func (s *OrderService) sign(orderDO *model.OrderDO, price bigint.BigInt, creatorFeeRate int, signature string) error {
+	if orderDO.Status != enum.OrderStatusWaitSignEnum.Code {
+		return errors.New("order status is error, need wait sign status")
+	}
+
+	// 添加价格和手续费
+	orderDO.Price = price
+	orderDO.CreatorFeeRate = creatorFeeRate
+	orderDO.Signature = signature
+	orderDO.Status = enum.OrderStatusListingEnum.Code
+	if err := orderDao.Model().Where("id = ?", orderDO.ID).Save(orderDO).Error; err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+func (s *OrderService) SignOrder(req api.SignOrderReq) error {
+	orderDO := orderDao.Model().Where("id = ?", req.ID).Exist()
+	if orderDO == nil {
+		return errors.New("order not exist")
+	}
+	return s.sign(orderDO, req.Price, req.CreatorFeeRate, req.Signature)
+}
+
+func (*OrderService) GetListingOrderByTick(tick string) []model.OrderDO {
+	var orderDOs []model.OrderDO
 	// 查询出所有状态为上架的订单
-	return orderDao.Model().SelectPage(req.PageReq).
+	orderDao.Model().
 		Where("status = ?", enum.OrderStatusListingEnum.Code).
-		WhereIf(req.Tick != "", "Tick like ?", "%"+req.Tick+"%").
-		Page()
+		Where("Tick = ?", tick).
+		Find(&orderDOs)
+	return orderDOs
 }
 
 func (*OrderService) GetBySeller(address string) []model.OrderDO {
@@ -64,7 +89,7 @@ func (*OrderService) GetBySeller(address string) []model.OrderDO {
 	return orderDOs
 }
 
-func (*OrderService) Listing(list model.ListDO) {
+func (*OrderService) List(list model.ListDO) {
 	orderDO := orderDao.ExistByListHash(list.Hash)
 	if orderDO == nil {
 		// 创建订单

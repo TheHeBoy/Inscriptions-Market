@@ -26,11 +26,11 @@ func SetupRoute(router *gin.Engine) {
 func RegisterAPIRoutes(r *gin.Engine) {
 
 	api := r.Group("/api")
-	api.Use(middlewares.LimitIP("200-H"))
+	//api.Use(middlewares.LimitIP("200-H"))
 	apiRoutes(api)
 
 	admin := r.Group("/admin")
-	admin.Use(middlewares.LimitIP("200-H"))
+	//admin.Use(middlewares.LimitIP("200-H"))
 	adminRoutes(admin)
 }
 
@@ -44,17 +44,23 @@ func apiRoutes(r *gin.RouterGroup) {
 	tokenGroup := r.Group("/tokens")
 	tcl := new(api.TokenController)
 	tokenGroup.GET("/page", tcl.PageTokens)
+	tokenGroup.GET("/page-listing", tcl.PageListingToken)
 	tokenGroup.GET("/:address", tcl.GetTokensByAddress)
 
 	orderGroup := r.Group("/orders")
 	ocl := new(api.OrderController)
 	orderGroup.PUT("/create", ocl.CreateOrder)
-	orderGroup.GET("/page", ocl.PageListingOrder)
+	orderGroup.PUT("/sign", ocl.SignOrder)
+	orderGroup.GET("/listing", ocl.GetListingOrderByTick)
 	orderGroup.GET("/:address", ocl.PageBySeller)
 
 	msc20Group := r.Group("/msc20")
 	m20c := new(api.Msc20Controller)
 	msc20Group.GET("/:address", m20c.GetMsc20ByAddress)
+
+	inscriptionGroup := r.Group("/inscriptions")
+	itc := new(api.InscriptionController)
+	inscriptionGroup.GET("/latest", itc.GetLatest)
 }
 
 func adminRoutes(r *gin.RouterGroup) {

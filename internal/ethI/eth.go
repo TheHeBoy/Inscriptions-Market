@@ -2,7 +2,6 @@ package ethI
 
 import (
 	"context"
-	"encoding/hex"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -15,7 +14,6 @@ import (
 	"gohub/pkg/config"
 	"gohub/pkg/eth"
 	"gohub/pkg/logger"
-	"gohub/pkg/utils/errorsp"
 	"math/big"
 	"strings"
 )
@@ -26,7 +24,7 @@ type Subscription struct {
 	Result  string `json:"result"`
 }
 
-var confirmBlock = 2
+var confirmBlock int
 
 // 订阅事件
 var execTopic = crypto.Keccak256Hash([]byte("MSC20OrderExecuted(address,address,bytes32,string,uint256,uint256,uint16)"))
@@ -58,7 +56,7 @@ func ListeningOrderLog() {
 	if err != nil {
 		panic(err)
 	}
-
+	filterLogs = filterLogs[1:]
 	for _, vLog := range filterLogs {
 		handleLog(vLog)
 	}
@@ -79,7 +77,7 @@ func ListeningOrderLog() {
 		for {
 			select {
 			case err := <-sub.Err():
-				logger.Error(errors.Wrap(err, "监听订单日志出错，退出"))
+				logger.Errorv(errors.Wrap(err, "监听订单日志出错，退出"))
 				return
 			case vLog := <-logs:
 				handleLog(vLog)
@@ -90,29 +88,17 @@ func ListeningOrderLog() {
 
 func handleLog(vLog types.Log) {
 	logger.Debugf("Log:%+v", vLog)
-	var status enum.OrderLogStatus
+	status := enum.OrderLogStatusSuccess
 	switch vLog.Topics[0].Hex() {
 	case execTopic.Hex(): // 订单执行
-		bytes, err := hex.DecodeString(vLog.Topics[3].String())
-		if err != nil {
-			logger.Errorv(errorsp.WithStack(err))
-			status = enum.OrderLogStatusDecodeFail
-			break
-		}
-		if errCode := service.Order.Execute(string(bytes)); errCode != enum.OrderLogStatusSuccess {
-			logger.Error(errCode.Name)
+		if errCode := service.Order.Execute(vLog.Topics[1].String()); errCode != enum.OrderLogStatusSuccess {
+			logger.Error("订单执行错误：" + errCode.Name)
 			status = errCode
 			break
 		}
 	case cancelTopic.Hex(): // 订单取消
-		bytes, err := hex.DecodeString(vLog.Topics[2].Hex())
-		if err != nil {
-			logger.Errorv(errorsp.WithStack(err))
-			status = enum.OrderLogStatusDecodeFail
-			break
-		}
-		if errCode := service.Order.Cancel(string(bytes)); errCode != enum.OrderLogStatusSuccess {
-			logger.Error(errCode.Name)
+		if errCode := service.Order.Cancel(vLog.Topics[1].String()); errCode != enum.OrderLogStatusSuccess {
+			logger.Error("取消订单执行错误：" + errCode.Name)
 			status = errCode
 			break
 		}
@@ -136,10 +122,10 @@ func savaLog(vLog types.Log, status string) error {
 	for i, v := range vLog.Topics {
 		topics[i] = v.Hex()
 	}
-	err := dao.OrderLog.Create(&model.OrderLogDO{
+
+	err := dao.OrderLog.Model().Create(&model.OrderLogDO{
 		Address:     vLog.Address.Hex(),
 		Topics:      topics,
-		Data:        string(vLog.Data),
 		BlockNumber: int64(vLog.BlockNumber),
 		TxHash:      vLog.TxHash.Hex(),
 		TxIndex:     vLog.TxIndex,
@@ -154,7 +140,17 @@ func savaLog(vLog types.Log, status string) error {
 
 type LogQueue []types.Log
 
+// Enqueue
+//
+//	@Description: 确认队列
+//	@receiver q
+//	@param n
+//	@return types.Log
+//	@return bool 入队是否成功
 func (q *LogQueue) Enqueue(n types.Log) (types.Log, bool) {
+	if confirmBlock <= 0 {
+		return n, false
+	}
 	if len(*q) < confirmBlock {
 		*q = append(*q, n)
 		return types.Log{}, true

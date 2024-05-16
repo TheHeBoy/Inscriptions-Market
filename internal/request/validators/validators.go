@@ -91,5 +91,5 @@ func ValidatePage(pageReq request.PageReq, errs map[string][]string) map[string]
 }
 
 func PageReqVal(pageReq any) map[string][]string {
-	return ValidatePage(pageReq.(request.PageReq), make(map[string][]string))
+	return ValidatePage(*pageReq.(*request.PageReq), make(map[string][]string))
 }

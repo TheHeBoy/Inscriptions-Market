@@ -23,24 +23,35 @@ func (lc *OrderController) CreateOrder(c *gin.Context) {
 	err := orderService.Create(req)
 	if err != nil {
 		logger.Errorv(err)
-		response.ErrorStr(c, "创建失败")
+		response.ErrorStr(c, "创建订单失败")
 	} else {
 		response.Success(c)
 	}
 }
 
-func (lc *OrderController) PageListingOrder(c *gin.Context) {
-	req := api.PageListingOrderReq{}
-	if ok := validators.Validate(c, &req, api.PageListingOrderVal); !ok {
+func (lc *OrderController) SignOrder(c *gin.Context) {
+	req := api.SignOrderReq{}
+	if ok := validators.Validate(c, &req, api.SignOrderVal); !ok {
 		return
 	}
-	page, err := orderService.PageListingOrder(req)
+
+	err := orderService.SignOrder(req)
 	if err != nil {
 		logger.Errorv(err)
-		response.ErrorStr(c, "分页查询失败")
+		response.ErrorStr(c, "签名订单失败")
 	} else {
-		response.SuccessData(c, page)
+		response.Success(c)
 	}
+}
+
+func (lc *OrderController) GetListingOrderByTick(c *gin.Context) {
+	req := api.GetListingOrderByTickReq{}
+	if ok := validators.Validate(c, &req, api.GetListingOrderByTickVal); !ok {
+		return
+	}
+	resp := orderService.GetListingOrderByTick(req.Tick)
+	response.SuccessData(c, resp)
+
 }
 
 func (lc *OrderController) PageBySeller(c *gin.Context) {

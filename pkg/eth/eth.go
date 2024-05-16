@@ -23,7 +23,6 @@ func SetupEth() {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 // VerifySignature 验证以太坊签名

@@ -2,7 +2,7 @@
 package dao
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"gohub/internal/request"
 	"gohub/pkg/config"
 	"gohub/pkg/database"
@@ -70,6 +70,11 @@ func (dao *BaseDao[T]) WhereIf(condition bool, query interface{}, args ...interf
 		*dao.DB = *dao.DB.Where(query, args)
 		return dao
 	}
+	return dao
+}
+
+func (dao *BaseDao[T]) Order(query any) *BaseDao[T] {
+	*dao.DB = *dao.DB.Order(query)
 	return dao
 }
 

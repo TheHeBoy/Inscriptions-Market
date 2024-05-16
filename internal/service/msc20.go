@@ -1,6 +1,7 @@
 package service
 
 import (
+	"gohub/internal/dao"
 	"gohub/internal/model"
 )
 
@@ -8,6 +9,7 @@ type Msc20Service struct {
 }
 
 var Msc20 = new(Msc20Service)
+var msc20Dao = dao.Msc20
 
 type GetMsc20ByAddressResp struct {
 	ID        uint64 `json:"id"`

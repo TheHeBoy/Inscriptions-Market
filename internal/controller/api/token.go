@@ -20,7 +20,22 @@ func (lc *TokenController) PageTokens(c *gin.Context) {
 		return
 	}
 
-	pageResp, err := tokenService.SelectPage(pageTokensReq.Tick, pageTokensReq.PageReq)
+	pageResp, err := tokenService.PageTokens(pageTokensReq.Tick, pageTokensReq.PageReq)
+	if err != nil {
+		logger.Errorv(err)
+		response.ErrorStr(c, "分页查询失败")
+	} else {
+		response.SuccessData(c, pageResp)
+	}
+}
+
+func (lc *TokenController) PageListingToken(c *gin.Context) {
+	pageTokensReq := api.PageTokensReq{}
+	if ok := validators.Validate(c, &pageTokensReq, api.PageTokensVal); !ok {
+		return
+	}
+
+	pageResp, err := tokenService.PageListingToken(pageTokensReq.Tick, pageTokensReq.PageReq)
 	if err != nil {
 		logger.Errorv(err)
 		response.ErrorStr(c, "分页查询失败")

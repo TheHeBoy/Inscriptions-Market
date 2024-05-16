@@ -78,7 +78,7 @@ func consume(msgs <-chan amqp.Delivery) {
 				logger.Errorf("Failed to unmarshal: %+v", errors.WithStack(err))
 				continue
 			}
-			service.Order.Listing(list)
+			service.Order.List(list)
 		}
 	}()
 }
