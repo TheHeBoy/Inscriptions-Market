@@ -7,7 +7,7 @@ import (
 
 var channel *amqp.Channel
 
-func InitMQ() {
+func SetupMQ() {
 	rabbitmq.ConnectMQ()
 	channel = rabbitmq.Ch
 	List.Declare()

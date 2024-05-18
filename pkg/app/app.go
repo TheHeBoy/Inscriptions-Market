@@ -14,8 +14,8 @@ func IsProduction() bool {
 	return config.Get("app.env") == "production"
 }
 
-func IsTesting() bool {
-	return config.Get("app.env") == "testing"
+func IsTest() bool {
+	return config.Get("app.env") == "test"
 }
 
 // TimenowInTimezone 获取当前时间，支持时区

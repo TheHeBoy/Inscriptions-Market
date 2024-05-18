@@ -2,6 +2,7 @@ package ethI
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -14,6 +15,7 @@ import (
 	"gohub/pkg/config"
 	"gohub/pkg/eth"
 	"gohub/pkg/logger"
+	"gorm.io/gorm"
 	"math/big"
 	"strings"
 )
@@ -41,7 +43,7 @@ func ListeningOrderLog() {
 	}
 
 	if orderLog != nil {
-		startNum = orderLog.BlockNumber
+		startNum = orderLog.BlockNumber + 1
 	}
 
 	address := strings.ToLower(config.Get("eth.contract_address"))
@@ -56,9 +58,9 @@ func ListeningOrderLog() {
 	if err != nil {
 		panic(err)
 	}
-	filterLogs = filterLogs[1:]
-	for _, vLog := range filterLogs {
-		handleLog(vLog)
+
+	for i := range filterLogs {
+		handleLog(filterLogs[i])
 	}
 
 	if len(filterLogs) > 0 {
@@ -87,32 +89,32 @@ func ListeningOrderLog() {
 }
 
 func handleLog(vLog types.Log) {
-	logger.Debugf("Log:%+v", vLog)
-	status := enum.OrderLogStatusSuccess
-	switch vLog.Topics[0].Hex() {
-	case execTopic.Hex(): // 订单执行
-		if errCode := service.Order.Execute(vLog.Topics[1].String()); errCode != enum.OrderLogStatusSuccess {
-			logger.Error("订单执行错误：" + errCode.Name)
-			status = errCode
-			break
+	err := dao.Transaction(func(tx *gorm.DB) error {
+		logger.Debugf("Log:%+v", vLog)
+		status := enum.OrderLogStatusSuccess
+		switch vLog.Topics[0].Hex() {
+		case execTopic.Hex(): // 订单执行
+			if errCode := service.Order.Execute(tx, vLog.Topics[1].String()); errCode != enum.OrderLogStatusSuccess {
+				logger.Error(fmt.Sprintf("执行订单失败：%s", errCode.Name))
+				status = errCode
+				return nil
+			}
+		case cancelTopic.Hex(): // 订单取消
+			if errCode := service.Order.Cancel(tx, vLog.Topics[1].String()); errCode != enum.OrderLogStatusSuccess {
+				logger.Error(fmt.Sprintf("订单取消：%s", errCode.Name))
+				status = errCode
+				return nil
+			}
 		}
-	case cancelTopic.Hex(): // 订单取消
-		if errCode := service.Order.Cancel(vLog.Topics[1].String()); errCode != enum.OrderLogStatusSuccess {
-			logger.Error("取消订单执行错误：" + errCode.Name)
-			status = errCode
-			break
-		}
-	}
-	// 保存日志
-	err := savaLog(vLog, status.Code)
-	if err != nil {
-		logger.Errorv(err)
-	}
+		logger.Error(status)
+		// 保存日志
+		err := savaLog(tx, vLog, status.Code)
+		return err
+	})
+	logger.Errorv(err)
 }
 
-var queue LogQueue = make([]types.Log, confirmBlock)
-
-func savaLog(vLog types.Log, status string) error {
+func savaLog(tx *gorm.DB, vLog types.Log, status string) error {
 	// 等待一段区块确认，避免区块重组
 	vLog, ok := queue.Enqueue(vLog)
 	if ok {
@@ -122,8 +124,7 @@ func savaLog(vLog types.Log, status string) error {
 	for i, v := range vLog.Topics {
 		topics[i] = v.Hex()
 	}
-
-	err := dao.OrderLog.Model().Create(&model.OrderLogDO{
+	return dao.OrderLog.Tx(tx).Create(&model.OrderLogDO{
 		Address:     vLog.Address.Hex(),
 		Topics:      topics,
 		BlockNumber: int64(vLog.BlockNumber),
@@ -132,11 +133,9 @@ func savaLog(vLog types.Log, status string) error {
 		Index:       vLog.Index,
 		Status:      status,
 	}).Error
-	if err != nil {
-		return err
-	}
-	return nil
 }
+
+var queue LogQueue = make([]types.Log, confirmBlock)
 
 type LogQueue []types.Log
 

@@ -2,10 +2,10 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"gohub/internal/request"
 	"gohub/internal/request/validators"
 	"gohub/internal/service"
 	"gohub/pkg/logger"
+	"gohub/pkg/page"
 	"gohub/pkg/response"
 )
 
@@ -15,8 +15,8 @@ type InscriptionController struct {
 var inscriptionService = service.Inscription
 
 func (mc *InscriptionController) GetLatest(c *gin.Context) {
-	pageReq := request.PageReq{}
-	if ok := validators.Validate(c, &pageReq, validators.PageReqVal); !ok {
+	pageReq := page.Req{}
+	if ok := validators.Validate(c, &pageReq); !ok {
 		return
 	}
 

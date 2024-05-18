@@ -5,9 +5,9 @@ import (
 	"gohub/internal/dao"
 	"gohub/internal/enum"
 	"gohub/internal/model"
-	"gohub/internal/request"
 	"gohub/pkg/bigint"
 	"gohub/pkg/config"
+	"gohub/pkg/page"
 	"sort"
 	"time"
 )
@@ -19,7 +19,7 @@ var Token = new(TokenService)
 var tokenDao = dao.Token
 var holderDao = dao.Holder
 
-func (*TokenService) PageTokens(tick string, pageReq request.PageReq) (*request.PageResp[model.TokenDO], error) {
+func (*TokenService) PageTokens(tick string, pageReq page.Req) (*page.Resp[model.TokenDO], error) {
 	pageReq.Fields = append(pageReq.Fields, "deploy_at")
 	pageReq.Orders = append(pageReq.Orders, "desc")
 
@@ -39,7 +39,7 @@ type PageListingTokenResp struct {
 	Listed      int           `json:"listed"`
 }
 
-func (*TokenService) PageListingToken(tick string, pageReq request.PageReq) (*request.PageResp[PageListingTokenResp], error) {
+func (*TokenService) PageListingToken(tick string, pageReq page.Req) (*page.Resp[PageListingTokenResp], error) {
 	var orderDOs []model.OrderDO
 	orderDao.Model().WhereIf(tick != "", "tick like ?", "%"+tick+"%").Find(&orderDOs)
 	var isInPastDay = func(t time.Time) bool {
@@ -129,11 +129,11 @@ func (*TokenService) PageListingToken(tick string, pageReq request.PageReq) (*re
 	if end > len(respSlice) {
 		end = len(respSlice)
 	}
-	page := respSlice[start:end]
+	list := respSlice[start:end]
 
-	return &request.PageResp[PageListingTokenResp]{
+	return &page.Resp[PageListingTokenResp]{
 		Total: int64(len(resp)),
-		List:  page,
+		List:  list,
 	}, nil
 }
 
@@ -143,31 +143,47 @@ type GetTokensByAddressResp struct {
 	InscriptionsNum uint64 `json:"inscriptionsNum"`
 }
 
-func (*TokenService) GetTokensByAddress(address string) []GetTokensByAddressResp {
+func (*TokenService) GetTokensByAddress(address string) ([]GetTokensByAddressResp, error) {
 	var holder []model.HolderDO
 	holderDao.Model().Where("address = ?", address).Find(&holder)
 
-	ticks := make([]any, len(holder))
+	ticks := make([]string, len(holder))
 	for i := range holder {
 		ticks[i] = holder[i].Tick
 	}
 
 	resp := make([]GetTokensByAddressResp, 0)
 
-	var msc20s []model.Msc20DO
-	msc20Dao.Model().
+	rows, err := msc20Dao.Model().
+		Select("tick", "id").
 		Where("valid = ?", 1).
-		Where("Tick in ?", ticks...).
+		Where("tick in ?", ticks).
 		Where("operation = ?", "deploy").
-		Find(&msc20s)
-
-	if len(msc20s) == 0 {
-		return resp
+		Rows()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	inscriptionsNumsMap, err := dao.MapRows[string, uint64](rows)
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
 
-	inscriptionsNumsMap := make(map[string]uint64)
-	for _, inscription := range msc20s {
-		inscriptionsNumsMap[inscription.Tick] = inscription.ID
+	if len(inscriptionsNumsMap) == 0 {
+		return resp, nil
+	}
+
+	// indexer 还没有收到 list 时，减少持有者数量
+	rows, err = orderDao.Model().
+		Select("tick", "amount").
+		Where("tick in ?", ticks).
+		Where("seller = ?", address).
+		Where("status = ?", enum.OrderStatusWaitListEnum.Code).Rows()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	orderAmountMap, err := dao.MapRows[string, uint64](rows)
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
 
 	for i := range holder {
@@ -175,11 +191,11 @@ func (*TokenService) GetTokensByAddress(address string) []GetTokensByAddressResp
 		if h.Amount > 0 {
 			resp = append(resp, GetTokensByAddressResp{
 				Tick:            h.Tick,
-				HoldersNum:      h.Amount,
+				HoldersNum:      h.Amount - orderAmountMap[h.Tick],
 				InscriptionsNum: inscriptionsNumsMap[h.Tick],
 			})
 		}
 	}
 
-	return resp
+	return resp, nil
 }

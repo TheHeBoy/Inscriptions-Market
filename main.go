@@ -27,7 +27,7 @@ func main() {
 		PersistentPreRun: func(command *cobra.Command, args []string) {
 
 			// 配置初始化，依赖命令行 --env 参数
-			config.InitConfig(cmd.Env)
+			config.SetupConfig(cmd.Env)
 
 			// 初始化 Logger
 			logger.SetupLogger()
@@ -39,7 +39,7 @@ func main() {
 			eth.SetupEth()
 
 			// 初始化消息队列
-			mqI.InitMQ()
+			mqI.SetupMQ()
 		},
 	}
 

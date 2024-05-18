@@ -16,7 +16,7 @@ type CreateOrderReq struct {
 	Signature      string        `json:"signature"`
 }
 
-func CreateOrderVal(data any) map[string][]string {
+func (r *CreateOrderReq) Validator() map[string][]string {
 	rules := govalidator.MapData{
 		"tick": []string{"min:1", "max:16"},
 	}
@@ -29,7 +29,7 @@ func CreateOrderVal(data any) map[string][]string {
 		},
 	}
 
-	errs := validators.ValidateData(data, rules, messages)
+	errs := validators.ValidateData(r, rules, messages)
 
 	return errs
 }
@@ -41,7 +41,7 @@ type SignOrderReq struct {
 	Signature      string        `json:"signature"`
 }
 
-func SignOrderVal(data any) map[string][]string {
+func (r *SignOrderReq) Validator() map[string][]string {
 	return make(map[string][]string)
 }
 
@@ -49,7 +49,7 @@ type GetListingOrderByTickReq struct {
 	Tick string `json:"tick" valid:"tick" form:"tick"`
 }
 
-func GetListingOrderByTickVal(data any) map[string][]string {
+func (r *GetListingOrderByTickReq) Validator() map[string][]string {
 	rules := govalidator.MapData{
 		"tick": []string{"min:1", "max:16"},
 	}
@@ -62,5 +62,5 @@ func GetListingOrderByTickVal(data any) map[string][]string {
 		},
 	}
 
-	return validators.ValidateData(data, rules, messages)
+	return validators.ValidateData(r, rules, messages)
 }

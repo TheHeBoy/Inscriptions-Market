@@ -68,20 +68,24 @@ func SetupDB() {
 
 // Connect 连接数据库
 func Connect(dbConfig gorm.Dialector) error {
-
-	log := zapgorm2.New(logger.LogZap)
-	log.IgnoreRecordNotFoundError = true
-	log.SetAsDefault()
+	cfg := &gorm.Config{}
+	if logger.LogZap != nil {
+		log := zapgorm2.New(logger.LogZap)
+		if config.GetBool("sql_log", false) {
+			log.LogLevel = 4
+		}
+		log.SetAsDefault()
+		log.IgnoreRecordNotFoundError = true
+		cfg.Logger = log
+	}
 
 	// 使用 gorm.Open 连接数据库
 	var err error
-	DB, err = gorm.Open(dbConfig, &gorm.Config{Logger: log})
-
+	DB, err = gorm.Open(dbConfig, cfg)
 	// 处理错误
 	if err != nil {
 		return err
 	}
-
 	// 获取底层的 sqlDB
 	SQLDB, err = DB.DB()
 	if err != nil {

@@ -12,7 +12,7 @@ import (
 	"gohub/pkg/eth"
 	"gohub/pkg/jwt"
 	"gohub/pkg/logger"
-	redis2 "gohub/pkg/redis"
+	"gohub/pkg/redisP"
 	"gohub/pkg/response"
 )
 
@@ -23,7 +23,7 @@ type LoginController struct {
 func (lc *LoginController) GetMessageAuth(c *gin.Context) {
 	// 1. 验证表单
 	req := api.GetMessageReq{}
-	if ok := validators.Validate(c, &req, api.GetMessageVal); !ok {
+	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
 	address := req.Address
@@ -36,7 +36,7 @@ func (lc *LoginController) GetMessageAuth(c *gin.Context) {
 
 	// 4. 保存到redis
 	redisKey := redisI.AuthNonce
-	redis2.Redis.Set(redisKey.SKey(address), message, redisKey.Expired)
+	redisP.Redis.Set(redisKey.SKey(address), message, redisKey.Expired)
 
 	response.SuccessData(c, gin.H{
 		"message": message,
@@ -48,13 +48,13 @@ func (lc *LoginController) GetMessageAuth(c *gin.Context) {
 func (lc *LoginController) LoginBySignatureAuth(c *gin.Context) {
 	// 1. 验证表单
 	req := api.LoginBySignatureReq{}
-	if ok := validators.Validate(c, &req, api.LoginBySignatureVal); !ok {
+	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
 
 	// 2. 验证 nonce
 	redisKey := redisI.AuthNonce
-	val := redis2.Redis.Get(redisKey.SKey(req.Address))
+	val := redisP.Redis.Get(redisKey.SKey(req.Address))
 	if val == "" {
 		response.ErrorStr(c, "message已失效，请重新获取")
 		return

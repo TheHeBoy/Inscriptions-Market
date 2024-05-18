@@ -2,16 +2,16 @@ package api
 
 import (
 	"github.com/thedevsaddam/govalidator"
-	"gohub/internal/request"
 	"gohub/internal/request/validators"
+	"gohub/pkg/page"
 )
 
 type PageTokensReq struct {
-	request.PageReq
+	page.Req
 	Tick string `json:"tick" valid:"tick" form:"tick"`
 }
 
-func PageTokensVal(data any) map[string][]string {
+func (r *PageTokensReq) Validator() map[string][]string {
 	rules := govalidator.MapData{
 		"tick": []string{"min:1", "max:16"},
 	}
@@ -24,11 +24,11 @@ func PageTokensVal(data any) map[string][]string {
 		},
 	}
 
-	errs := validators.ValidateData(data, rules, messages)
+	errs := validators.ValidateData(r, rules, messages)
 
 	// 添加分页校验
-	_data := data.(*PageTokensReq).PageReq
-	errs = validators.ValidatePage(_data, errs)
+	_data := &r.Req
+	errs = page.ValidatePage(_data, errs)
 
 	return errs
 }

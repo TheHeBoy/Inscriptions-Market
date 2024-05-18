@@ -9,7 +9,7 @@ import (
 	"gohub/pkg/config"
 	"gohub/pkg/console"
 	"gohub/pkg/logger"
-	"gohub/pkg/redis"
+	"gohub/pkg/redisP"
 )
 
 // CmdServe represents the available web sub-command.
@@ -39,7 +39,7 @@ func runWeb(cmd *cobra.Command, args []string) {
 	routes.SetupRoute(router)
 
 	// 初始化 Redis
-	redis.SetupRedis()
+	redisP.SetupRedis()
 
 	// 监听订单日志
 	ethI.ListeningOrderLog()

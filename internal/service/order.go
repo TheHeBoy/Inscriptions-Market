@@ -8,6 +8,7 @@ import (
 	"gohub/internal/request/api"
 	"gohub/pkg/bigint"
 	"gohub/pkg/logger"
+	"gorm.io/gorm"
 )
 
 type OrderService struct {
@@ -113,16 +114,16 @@ func (*OrderService) List(list model.ListDO) {
 	}
 }
 
-func (*OrderService) Execute(listHash string) enum.OrderLogStatus {
-	return updateOrderStatus(listHash, enum.OrderStatusSoldEnum)
+func (*OrderService) Execute(tx *gorm.DB, listHash string) enum.OrderLogStatus {
+	return updateOrderStatus(tx, listHash, enum.OrderStatusSoldEnum)
 }
 
-func (*OrderService) Cancel(listHash string) enum.OrderLogStatus {
-	return updateOrderStatus(listHash, enum.OrderStatusCanceledEnum)
+func (*OrderService) Cancel(tx *gorm.DB, listHash string) enum.OrderLogStatus {
+	return updateOrderStatus(tx, listHash, enum.OrderStatusCanceledEnum)
 }
 
-func updateOrderStatus(listHash string, status enum.OrderStatus) enum.OrderLogStatus {
-	orderDO := orderDao.ExistByListHash(listHash)
+func updateOrderStatus(tx *gorm.DB, listHash string, status enum.OrderStatus) enum.OrderLogStatus {
+	orderDO := orderDao.Tx(tx).ExistByListHash(listHash)
 	if orderDO == nil {
 		return enum.OrderLogStatusOrderNotExist
 	}
@@ -130,7 +131,7 @@ func updateOrderStatus(listHash string, status enum.OrderStatus) enum.OrderLogSt
 		return enum.OrderLogStatusStatusError
 	}
 
-	err := orderDao.UpdateStatusByListHash(listHash, status)
+	err := orderDao.Tx(tx).UpdateStatusByListHash(listHash, status)
 	if err != nil {
 		return enum.OrderLogStatusUpdateFailed
 	}

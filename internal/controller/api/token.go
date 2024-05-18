@@ -15,12 +15,12 @@ type TokenController struct {
 var tokenService = service.Token
 
 func (lc *TokenController) PageTokens(c *gin.Context) {
-	pageTokensReq := api.PageTokensReq{}
-	if ok := validators.Validate(c, &pageTokensReq, api.PageTokensVal); !ok {
+	pageTokensReq := &api.PageTokensReq{}
+	if ok := validators.Validate(c, pageTokensReq); !ok {
 		return
 	}
 
-	pageResp, err := tokenService.PageTokens(pageTokensReq.Tick, pageTokensReq.PageReq)
+	pageResp, err := tokenService.PageTokens(pageTokensReq.Tick, pageTokensReq.Req)
 	if err != nil {
 		logger.Errorv(err)
 		response.ErrorStr(c, "分页查询失败")
@@ -31,11 +31,11 @@ func (lc *TokenController) PageTokens(c *gin.Context) {
 
 func (lc *TokenController) PageListingToken(c *gin.Context) {
 	pageTokensReq := api.PageTokensReq{}
-	if ok := validators.Validate(c, &pageTokensReq, api.PageTokensVal); !ok {
+	if ok := validators.Validate(c, &pageTokensReq); !ok {
 		return
 	}
 
-	pageResp, err := tokenService.PageListingToken(pageTokensReq.Tick, pageTokensReq.PageReq)
+	pageResp, err := tokenService.PageListingToken(pageTokensReq.Tick, pageTokensReq.Req)
 	if err != nil {
 		logger.Errorv(err)
 		response.ErrorStr(c, "分页查询失败")
@@ -50,6 +50,12 @@ func (lc *TokenController) GetTokensByAddress(c *gin.Context) {
 		response.ErrorStr(c, "地址不能为空")
 		return
 	}
-
-	response.SuccessData(c, tokenService.GetTokensByAddress(address))
+	resp, err := tokenService.GetTokensByAddress(address)
+	if err != nil {
+		logger.Errorv(err)
+		response.ErrorStr(c, "查询Token失败")
+		return
+	} else {
+		response.SuccessData(c, resp)
+	}
 }

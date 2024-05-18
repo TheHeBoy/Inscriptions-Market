@@ -35,8 +35,7 @@ func init() {
 	}
 }
 
-// InitConfig 完成环境变量
-func InitConfig(env string) {
+func SetupConfig(env string) {
 	loadEnv(env)
 }
 

@@ -2,30 +2,44 @@
 package dao
 
 import (
+	"database/sql"
 	"errors"
-	"gohub/internal/request"
 	"gohub/pkg/config"
 	"gohub/pkg/database"
 	"gohub/pkg/logger"
+	"gohub/pkg/page"
 	"gorm.io/gorm"
 )
+
+type TransactionFunc[T any] interface {
+	Tx(tx *gorm.DB) T
+}
 
 type BaseDao[T any] struct {
 	*gorm.DB
 }
 
 func (dao *BaseDao[T]) New() *BaseDao[T] {
-	return &BaseDao[T]{DB: database.DB}
+	if dao.DB == nil {
+		return &BaseDao[T]{DB: database.DB}
+	} else {
+		return dao
+	}
 }
 
 func (dao *BaseDao[T]) Model() *BaseDao[T] {
-	var model = new(T)
-	baseDao := dao.New()
-	baseDao.DB = database.DB.Model(model)
-	return baseDao
+	if dao.DB == nil {
+		var model = new(T)
+		baseDao := dao.New()
+		baseDao.DB = database.DB.Model(model)
+		return baseDao
+	} else {
+		dao.DB = dao.DB.Model(new(T))
+		return dao
+	}
 }
 
-func paginate(pageReq request.PageReq) func(*gorm.DB) *gorm.DB {
+func paginate(pageReq page.Req) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		pageNo := pageReq.PageNo
 		if pageNo <= 0 {
@@ -55,31 +69,31 @@ func paginate(pageReq request.PageReq) func(*gorm.DB) *gorm.DB {
 	}
 }
 
-func (dao *BaseDao[T]) SelectPage(pageReq request.PageReq) *BaseDao[T] {
-	*dao.DB = *dao.DB.Scopes(paginate(pageReq))
+func (dao *BaseDao[T]) SelectPage(pageReq page.Req) *BaseDao[T] {
+	dao.DB = dao.DB.Scopes(paginate(pageReq))
 	return dao
 }
 
 func (dao *BaseDao[T]) Where(query interface{}, args ...interface{}) *BaseDao[T] {
-	*dao.DB = *dao.DB.Where(query, args)
+	dao.DB = dao.DB.Where(query, args)
 	return dao
 }
 
 func (dao *BaseDao[T]) WhereIf(condition bool, query interface{}, args ...interface{}) *BaseDao[T] {
 	if condition {
-		*dao.DB = *dao.DB.Where(query, args)
+		dao.DB = dao.DB.Where(query, args)
 		return dao
 	}
 	return dao
 }
 
 func (dao *BaseDao[T]) Order(query any) *BaseDao[T] {
-	*dao.DB = *dao.DB.Order(query)
+	dao.DB = dao.DB.Order(query)
 	return dao
 }
 
-func (dao *BaseDao[T]) Page() (*request.PageResp[T], error) {
-	var pageResp = new(request.PageResp[T])
+func (dao *BaseDao[T]) Page() (*page.Resp[T], error) {
+	var pageResp = new(page.Resp[T])
 	err := dao.DB.Count(&pageResp.Total).Error
 	if err != nil {
 		return nil, err
@@ -90,6 +104,21 @@ func (dao *BaseDao[T]) Page() (*request.PageResp[T], error) {
 		return nil, err
 	}
 	return pageResp, nil
+}
+
+func MapRows[K comparable, V any](rows *sql.Rows) (map[K]V, error) {
+	defer rows.Close()
+	m := make(map[K]V)
+	for rows.Next() {
+		var key K
+		var value V
+		err := rows.Scan(&key, &value)
+		if err != nil {
+			return nil, err
+		}
+		m[key] = value
+	}
+	return m, nil
 }
 
 // Exist
@@ -109,4 +138,8 @@ func (dao *BaseDao[T]) Exist() *T {
 	} else {
 		return &model
 	}
+}
+
+func Transaction(fc func(tx *gorm.DB) error, opts ...*sql.TxOptions) error {
+	return database.DB.Transaction(fc, opts...)
 }

@@ -6,31 +6,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/thedevsaddam/govalidator"
-	"gohub/internal/request"
-	"gohub/pkg/config"
 	"gohub/pkg/logger"
 	"gohub/pkg/response"
 )
 
-// ValidatorFunc 验证函数类型
-type ValidatorFunc func(interface{}) map[string][]string
+type ValidatorI interface {
+	Validator() map[string][]string
+}
 
-// Validate 控制器里调用示例：
-//
-//	if ok := requests.Validate(c, &requests.UserSaveRequest{}, requests.UserSave); !ok {
-//	    return
-//	}
-func Validate(c *gin.Context, obj interface{}, handler ValidatorFunc) bool {
+func Validate(c *gin.Context, valObj ValidatorI) bool {
 
 	// 1. 解析请求，支持 JSON 数据、表单请求和 URL Query
-	if err := c.ShouldBind(obj); err != nil {
+	if err := c.ShouldBind(valObj); err != nil {
 		logger.Errorv(err)
 		response.Error405(c, errors.New("请求解析错误，请确认请求格式是否正确。参数请使用 JSON 格式。"))
 		return false
 	}
 
 	// 2. 表单验证
-	errs := handler(obj)
+	errs := valObj.Validator()
 
 	jsonData, err := json.Marshal(errs)
 	if err != nil {
@@ -57,39 +51,4 @@ func ValidateData(data interface{}, rules govalidator.MapData, messages govalida
 	}
 	// 开始验证
 	return govalidator.New(opts).ValidateStruct()
-}
-
-// ValidatePage 自定义规则，验证分页参数
-func ValidatePage(pageReq request.PageReq, errs map[string][]string) map[string][]string {
-
-	maxPageSize := config.GetInt("page.max_page_size")
-	if pageReq.PageSize > maxPageSize {
-		errs["pageNo"] = append(errs["pageNo"], fmt.Sprintf("页码超出最大限制%d", maxPageSize))
-	}
-
-	fields := pageReq.Fields
-	orders := pageReq.Orders
-
-	if len(fields) != len(orders) {
-		errs["fields"] = append(errs["fields"], "fields 和 orders 长度不一致")
-	}
-
-	for _, field := range fields {
-		if field == "" {
-			errs["fields"] = append(errs["fields"], "fields 不能为空")
-			break
-		}
-	}
-
-	for _, order := range orders {
-		if order != "asc" && order != "desc" {
-			errs["orders"] = append(errs["orders"], "order 只能是 asc 或 desc")
-			break
-		}
-	}
-	return errs
-}
-
-func PageReqVal(pageReq any) map[string][]string {
-	return ValidatePage(*pageReq.(*request.PageReq), make(map[string][]string))
 }

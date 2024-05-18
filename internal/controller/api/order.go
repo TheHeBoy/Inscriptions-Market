@@ -16,7 +16,7 @@ var orderService = service.Order
 
 func (lc *OrderController) CreateOrder(c *gin.Context) {
 	req := api.CreateOrderReq{}
-	if ok := validators.Validate(c, &req, api.CreateOrderVal); !ok {
+	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
 
@@ -31,7 +31,7 @@ func (lc *OrderController) CreateOrder(c *gin.Context) {
 
 func (lc *OrderController) SignOrder(c *gin.Context) {
 	req := api.SignOrderReq{}
-	if ok := validators.Validate(c, &req, api.SignOrderVal); !ok {
+	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
 
@@ -46,7 +46,7 @@ func (lc *OrderController) SignOrder(c *gin.Context) {
 
 func (lc *OrderController) GetListingOrderByTick(c *gin.Context) {
 	req := api.GetListingOrderByTickReq{}
-	if ok := validators.Validate(c, &req, api.GetListingOrderByTickVal); !ok {
+	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
 	resp := orderService.GetListingOrderByTick(req.Tick)
