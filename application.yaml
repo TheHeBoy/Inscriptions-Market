@@ -4,7 +4,7 @@ app:
   name: Gohub
   # 当前环境，用以区分多环境，一般为 local, production, testing, 与配置文件后缀相匹配，命令行的环境配置会覆盖这个
   env: local
-  # 是否进入调试模式；如 jwt 过期时间分为 debug_expire_time 和 expire_time
+  # 是否进入调试模式
   debug: true
   # 应用服务端口
   port: "3000"
