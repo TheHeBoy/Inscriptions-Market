@@ -13,8 +13,7 @@ type OrderDao struct {
 var Order = new(OrderDao)
 
 func (dao *OrderDao) Tx(db *gorm.DB) *OrderDao {
-	dao.DB = db
-	return dao
+	return &OrderDao{BaseDao[model.OrderDO]{DB: db}}
 }
 
 func (dao *OrderDao) ExistByListHash(listHash string) *model.OrderDO {
@@ -32,8 +31,7 @@ type OrderLogDao struct {
 var OrderLog = new(OrderLogDao)
 
 func (dao *OrderLogDao) Tx(db *gorm.DB) *OrderLogDao {
-	dao.DB = db
-	return dao
+	return &OrderLogDao{BaseDao[model.OrderLogDO]{DB: db}}
 }
 
 type ListDao struct {

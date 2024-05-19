@@ -111,7 +111,9 @@ func handleLog(vLog types.Log) {
 		err := savaLog(tx, vLog, status.Code)
 		return err
 	})
-	logger.Errorv(err)
+	if err != nil {
+		logger.Errorv(err)
+	}
 }
 
 func savaLog(tx *gorm.DB, vLog types.Log, status string) error {

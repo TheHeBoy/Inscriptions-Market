@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gohub/cmd"
-	"gohub/cmd/make"
 	"gohub/internal/mqI"
 	"gohub/pkg/config"
 	"gohub/pkg/console"
@@ -46,11 +45,8 @@ func main() {
 	// 注册子命令
 	rootCmd.AddCommand(
 		cmd.CmdServe,
-		cmd.CmdKey,
 		cmd.CmdPlay,
-		make.CmdMake,
 		cmd.CmdMigrate,
-		cmd.CmdDBSeed,
 	)
 
 	// 配置默认运行 Web 服务

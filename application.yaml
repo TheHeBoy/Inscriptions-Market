@@ -16,7 +16,7 @@ app:
 # 数据库配置
 database:
   # 是否启用 sql 日志
-  sql_log: false
+  sql_log: true
   # 默认数据库
   connection: mysql
   mysql:

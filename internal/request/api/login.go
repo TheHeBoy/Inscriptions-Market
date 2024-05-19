@@ -6,7 +6,7 @@ import (
 )
 
 type GetMessageReq struct {
-	Address string `json:"address" valid:"address" form:"address"` // 账户地址
+	Address string `json:"address" form:"address"` // 账户地址
 }
 
 func (r *GetMessageReq) Validator() map[string][]string {
@@ -23,8 +23,8 @@ func (r *GetMessageReq) Validator() map[string][]string {
 }
 
 type LoginBySignatureReq struct {
-	Address   string `json:"address" valid:"address"`     // 账户地址
-	Signature string `json:"signature" valid:"signature"` // 签名
+	Address   string `json:"address"`   // 账户地址
+	Signature string `json:"signature"` // 签名
 }
 
 func (r *LoginBySignatureReq) Validator() map[string][]string {

@@ -1,5 +1,6 @@
 app:
   debug: true
+
 database:
   connection: mysql
   mysql:
@@ -31,7 +32,7 @@ eth:
   contract_address: 0xbCFB2b3aeEca7a535acd82a18BFa1a3013F09df5 # 合约地址
   rpc_url: http://127.0.0.1:8545 # rpc地址
   ws_rpc_url: ws://127.0.0.1:8545 # rpc ws 地址
-  start_block: 1 # 合约部署块高度
+  start_block: 70 # 合约部署块高度
   confirm_block: 0 # 确认块高度
 
 mq:

@@ -8,7 +8,7 @@ import (
 
 type PageTokensReq struct {
 	page.Req
-	Tick string `json:"tick" valid:"tick" form:"tick"`
+	Tick string `json:"tick" form:"tick"`
 }
 
 func (r *PageTokensReq) Validator() map[string][]string {

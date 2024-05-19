@@ -46,7 +46,7 @@ func (r *SignOrderReq) Validator() map[string][]string {
 }
 
 type GetListingOrderByTickReq struct {
-	Tick string `json:"tick" valid:"tick" form:"tick"`
+	Tick string `json:"tick" form:"tick"`
 }
 
 func (r *GetListingOrderByTickReq) Validator() map[string][]string {

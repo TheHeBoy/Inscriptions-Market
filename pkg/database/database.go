@@ -71,7 +71,7 @@ func Connect(dbConfig gorm.Dialector) error {
 	cfg := &gorm.Config{}
 	if logger.LogZap != nil {
 		log := zapgorm2.New(logger.LogZap)
-		if config.GetBool("sql_log", false) {
+		if config.GetBool("database.sql_log", false) {
 			log.LogLevel = 4
 		}
 		log.SetAsDefault()

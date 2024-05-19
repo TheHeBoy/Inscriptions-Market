@@ -24,9 +24,10 @@ func (s *OrderService) Create(req api.CreateOrderReq) error {
 	if orderDO != nil {
 		if orderDO.Tick == req.Tick &&
 			orderDO.Seller == req.Seller && orderDO.Amount == req.Amount {
+			return s.sign(orderDO, req.Price, req.CreatorFeeRate, req.Signature)
+		} else {
 			return errors.New("order info is error")
 		}
-		return s.sign(orderDO, req.Price, req.CreatorFeeRate, req.Signature)
 	}
 
 	// 创建订单

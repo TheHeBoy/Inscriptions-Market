@@ -23,9 +23,9 @@ func (*TokenService) PageTokens(tick string, pageReq page.Req) (*page.Resp[model
 	pageReq.Fields = append(pageReq.Fields, "deploy_at")
 	pageReq.Orders = append(pageReq.Orders, "desc")
 
-	return tokenDao.Model().SelectPage(pageReq).
+	return tokenDao.Model().
 		WhereIf(tick != "", "Tick like ?", "%"+tick+"%").
-		Page()
+		Page(pageReq)
 }
 
 type PageListingTokenResp struct {

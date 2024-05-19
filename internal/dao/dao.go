@@ -20,23 +20,14 @@ type BaseDao[T any] struct {
 }
 
 func (dao *BaseDao[T]) New() *BaseDao[T] {
-	if dao.DB == nil {
-		return &BaseDao[T]{DB: database.DB}
-	} else {
-		return dao
-	}
+	return &BaseDao[T]{DB: database.DB}
 }
 
 func (dao *BaseDao[T]) Model() *BaseDao[T] {
-	if dao.DB == nil {
-		var model = new(T)
-		baseDao := dao.New()
-		baseDao.DB = database.DB.Model(model)
-		return baseDao
-	} else {
-		dao.DB = dao.DB.Model(new(T))
-		return dao
-	}
+	var model = new(T)
+	baseDao := dao.New()
+	baseDao.DB = database.DB.Model(model)
+	return baseDao
 }
 
 func paginate(pageReq page.Req) func(*gorm.DB) *gorm.DB {
@@ -70,7 +61,7 @@ func paginate(pageReq page.Req) func(*gorm.DB) *gorm.DB {
 }
 
 func (dao *BaseDao[T]) SelectPage(pageReq page.Req) *BaseDao[T] {
-	dao.DB = dao.DB.Scopes(paginate(pageReq))
+	//dao.DB = dao.DB.Scopes(paginate(pageReq))
 	return dao
 }
 
@@ -92,33 +83,17 @@ func (dao *BaseDao[T]) Order(query any) *BaseDao[T] {
 	return dao
 }
 
-func (dao *BaseDao[T]) Page() (*page.Resp[T], error) {
+func (dao *BaseDao[T]) Page(pageReq page.Req) (*page.Resp[T], error) {
 	var pageResp = new(page.Resp[T])
 	err := dao.DB.Count(&pageResp.Total).Error
 	if err != nil {
 		return nil, err
 	}
-
-	err = dao.DB.Find(&pageResp.List).Error
+	err = dao.DB.Scopes(paginate(pageReq)).Find(&pageResp.List).Error
 	if err != nil {
 		return nil, err
 	}
 	return pageResp, nil
-}
-
-func MapRows[K comparable, V any](rows *sql.Rows) (map[K]V, error) {
-	defer rows.Close()
-	m := make(map[K]V)
-	for rows.Next() {
-		var key K
-		var value V
-		err := rows.Scan(&key, &value)
-		if err != nil {
-			return nil, err
-		}
-		m[key] = value
-	}
-	return m, nil
 }
 
 // Exist
@@ -138,6 +113,21 @@ func (dao *BaseDao[T]) Exist() *T {
 	} else {
 		return &model
 	}
+}
+
+func MapRows[K comparable, V any](rows *sql.Rows) (map[K]V, error) {
+	defer rows.Close()
+	m := make(map[K]V)
+	for rows.Next() {
+		var key K
+		var value V
+		err := rows.Scan(&key, &value)
+		if err != nil {
+			return nil, err
+		}
+		m[key] = value
+	}
+	return m, nil
 }
 
 func Transaction(fc func(tx *gorm.DB) error, opts ...*sql.TxOptions) error {

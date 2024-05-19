@@ -1,0 +1,28 @@
+# 数据库配置
+database:
+  connection: mysql
+  mysql:
+    master:
+      host: 127.0.0.1
+      port: 3306
+      database: gohub
+      username: root
+      password: 123456
+      charset: utf8mb4
+    indexer:
+      host: 127.0.0.1
+      port: 3306
+      database: indexer
+      username: root
+      password: 123456
+      charset: utf8mb4
+
+# Redis 配置
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  database: 0
+
+
+
