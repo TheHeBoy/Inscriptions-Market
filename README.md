@@ -1,10 +1,10 @@
 # SupInscriptions
 
-基于以太坊 ETHS https://docs.ethscriptions.com/  协议实现的铭文 Token  市场。
+基于以太坊 ETHS https://docs.ethscriptions.com/  协议实现的 inscriptions market。
 
-- 铭文索引器：https://github.com/inscriptions-market/indexer-msc20
-- 市场合约：https://github.com/inscriptions-market/market-contract
-- 前端demo:：https://github.com/inscriptions-market/market-front
+- 铭文索引器：https://github.com/TheHeBoy/indexer_msc20
+- 市场合约：https://github.com/TheHeBoy/market-contract
+- 前端demo:：https://github.com/TheHeBoy/market-front
 
 ## 后端接口
 
