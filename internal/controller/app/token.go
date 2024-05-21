@@ -1,8 +1,8 @@
-package api
+package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"gohub/internal/request/api"
+	"gohub/internal/request/app"
 	"gohub/internal/request/validators"
 	"gohub/internal/service"
 	"gohub/pkg/logger"
@@ -15,7 +15,7 @@ type TokenController struct {
 var tokenService = service.Token
 
 func (lc *TokenController) PageTokens(c *gin.Context) {
-	pageTokensReq := &api.PageTokensReq{}
+	pageTokensReq := &app.PageTokensReq{}
 	if ok := validators.Validate(c, pageTokensReq); !ok {
 		return
 	}
@@ -30,7 +30,7 @@ func (lc *TokenController) PageTokens(c *gin.Context) {
 }
 
 func (lc *TokenController) PageListingToken(c *gin.Context) {
-	pageTokensReq := api.PageTokensReq{}
+	pageTokensReq := app.PageTokensReq{}
 	if ok := validators.Validate(c, &pageTokensReq); !ok {
 		return
 	}

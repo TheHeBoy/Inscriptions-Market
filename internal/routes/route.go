@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"gohub/internal/controller/api"
+	"gohub/internal/controller/app"
 	"gohub/internal/routes/middlewares"
 	"net/http"
 	"strings"
@@ -25,7 +25,7 @@ func SetupRoute(router *gin.Engine) {
 // RegisterAPIRoutes 注册 API 相关路由
 func RegisterAPIRoutes(r *gin.Engine) {
 
-	api := r.Group("/api")
+	api := r.Group("/app")
 	//api.Use(middlewares.LimitIP("200-H"))
 	apiRoutes(api)
 
@@ -36,30 +36,30 @@ func RegisterAPIRoutes(r *gin.Engine) {
 
 func apiRoutes(r *gin.RouterGroup) {
 	authGroup := r.Group("/auth")
-	lgc := new(api.LoginController)
+	lgc := new(app.LoginController)
 	authGroup.GET("/message", middlewares.GuestJWT(), lgc.GetMessageAuth)
 	authGroup.POST("/login", middlewares.GuestJWT(), lgc.LoginBySignatureAuth)
 	authGroup.POST("/refresh-token", lgc.RefreshToken)
 
 	tokenGroup := r.Group("/tokens")
-	tcl := new(api.TokenController)
+	tcl := new(app.TokenController)
 	tokenGroup.GET("/page", tcl.PageTokens)
 	tokenGroup.GET("/page-listing", tcl.PageListingToken)
 	tokenGroup.GET("/:address", tcl.GetTokensByAddress)
 
 	orderGroup := r.Group("/orders")
-	ocl := new(api.OrderController)
+	ocl := new(app.OrderController)
 	orderGroup.PUT("/create", ocl.CreateOrder)
 	orderGroup.PUT("/sign", ocl.SignOrder)
 	orderGroup.GET("/listing", ocl.GetListingOrderByTick)
 	orderGroup.GET("/:address", ocl.PageBySeller)
 
 	msc20Group := r.Group("/msc20")
-	m20c := new(api.Msc20Controller)
+	m20c := new(app.Msc20Controller)
 	msc20Group.GET("/:address", m20c.GetMsc20ByAddress)
 
 	inscriptionGroup := r.Group("/inscriptions")
-	itc := new(api.InscriptionController)
+	itc := new(app.InscriptionController)
 	inscriptionGroup.GET("/latest", itc.GetLatest)
 }
 

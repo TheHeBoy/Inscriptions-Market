@@ -5,7 +5,7 @@ import (
 	"gohub/internal/dao"
 	"gohub/internal/enum"
 	"gohub/internal/model"
-	"gohub/internal/request/api"
+	"gohub/internal/request/app"
 	"gohub/pkg/bigint"
 	"gohub/pkg/logger"
 	"gorm.io/gorm"
@@ -18,7 +18,7 @@ var Order = new(OrderService)
 var orderDao = dao.Order
 var listDao = dao.List
 
-func (s *OrderService) Create(req api.CreateOrderReq) error {
+func (s *OrderService) Create(req app.CreateOrderReq) error {
 	orderDO := orderDao.ExistByListHash(req.ListHash)
 	// 已经发送了 list 铭文到合约里, 但是还没有签名
 	if orderDO != nil {
@@ -67,7 +67,7 @@ func (s *OrderService) sign(orderDO *model.OrderDO, price bigint.BigInt, creator
 	return nil
 }
 
-func (s *OrderService) SignOrder(req api.SignOrderReq) error {
+func (s *OrderService) SignOrder(req app.SignOrderReq) error {
 	orderDO := orderDao.Model().Where("id = ?", req.ID).Exist()
 	if orderDO == nil {
 		return errors.New("order not exist")

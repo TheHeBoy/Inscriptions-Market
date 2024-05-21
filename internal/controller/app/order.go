@@ -1,8 +1,8 @@
-package api
+package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"gohub/internal/request/api"
+	"gohub/internal/request/app"
 	"gohub/internal/request/validators"
 	"gohub/internal/service"
 	"gohub/pkg/logger"
@@ -15,7 +15,7 @@ type OrderController struct {
 var orderService = service.Order
 
 func (lc *OrderController) CreateOrder(c *gin.Context) {
-	req := api.CreateOrderReq{}
+	req := app.CreateOrderReq{}
 	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
@@ -30,7 +30,7 @@ func (lc *OrderController) CreateOrder(c *gin.Context) {
 }
 
 func (lc *OrderController) SignOrder(c *gin.Context) {
-	req := api.SignOrderReq{}
+	req := app.SignOrderReq{}
 	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
@@ -45,7 +45,7 @@ func (lc *OrderController) SignOrder(c *gin.Context) {
 }
 
 func (lc *OrderController) GetListingOrderByTick(c *gin.Context) {
-	req := api.GetListingOrderByTickReq{}
+	req := app.GetListingOrderByTickReq{}
 	if ok := validators.Validate(c, &req); !ok {
 		return
 	}

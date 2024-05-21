@@ -48,6 +48,7 @@ func loadEnv(envSuffix string) {
 			envPath = filepath
 		}
 	} else if len(Get("app.env")) > 0 {
+		envSuffix = Get("app.env")
 		envPath = formatEnvStr(Get("app.env"))
 	}
 
@@ -59,6 +60,7 @@ func loadEnv(envSuffix string) {
 		panic(err)
 	}
 
+	viper.Set("app.env", envSuffix)
 	// 监控 .env 文件，变更时重新加载
 	viper.WatchConfig()
 }

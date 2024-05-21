@@ -1,4 +1,4 @@
-package api
+package app
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"gohub/internal/redisI"
-	"gohub/internal/request/api"
+	"gohub/internal/request/app"
 	"gohub/internal/request/validators"
 	"gohub/pkg/config"
 	"gohub/pkg/eth"
@@ -22,7 +22,7 @@ type LoginController struct {
 // GetMessageAuth 得到签名所需要的 Message
 func (lc *LoginController) GetMessageAuth(c *gin.Context) {
 	// 1. 验证表单
-	req := api.GetMessageReq{}
+	req := app.GetMessageReq{}
 	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
@@ -47,7 +47,7 @@ func (lc *LoginController) GetMessageAuth(c *gin.Context) {
 // LoginBySignatureAuth 签名登录
 func (lc *LoginController) LoginBySignatureAuth(c *gin.Context) {
 	// 1. 验证表单
-	req := api.LoginBySignatureReq{}
+	req := app.LoginBySignatureReq{}
 	if ok := validators.Validate(c, &req); !ok {
 		return
 	}
