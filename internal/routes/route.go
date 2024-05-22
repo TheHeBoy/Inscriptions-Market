@@ -25,16 +25,16 @@ func SetupRoute(router *gin.Engine) {
 // RegisterAPIRoutes 注册 API 相关路由
 func RegisterAPIRoutes(r *gin.Engine) {
 
-	api := r.Group("/app")
+	appGroup := r.Group("/app")
 	//api.Use(middlewares.LimitIP("200-H"))
-	apiRoutes(api)
+	appRoutes(appGroup)
 
-	admin := r.Group("/admin")
+	adminGroup := r.Group("/admin")
 	//admin.Use(middlewares.LimitIP("200-H"))
-	adminRoutes(admin)
+	adminRoutes(adminGroup)
 }
 
-func apiRoutes(r *gin.RouterGroup) {
+func appRoutes(r *gin.RouterGroup) {
 	authGroup := r.Group("/auth")
 	lgc := new(app.LoginController)
 	authGroup.GET("/message", middlewares.GuestJWT(), lgc.GetMessageAuth)
@@ -63,9 +63,7 @@ func apiRoutes(r *gin.RouterGroup) {
 	inscriptionGroup.GET("/latest", itc.GetLatest)
 }
 
-func adminRoutes(r *gin.RouterGroup) {
-
-}
+func adminRoutes(r *gin.RouterGroup) {}
 
 func registerGlobalMiddleWare(router *gin.Engine) {
 	router.Use(
